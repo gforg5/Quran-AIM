@@ -1,0 +1,8 @@
+{
+  "name": "Al-Malik App",
+  "description": "An easy and professional way to learn about the Holy Quran and Prophetic Traditions (Hadith).",
+  "requestFramePermissions": [
+    "geolocation",
+    "microphone"
+  ]
+}
