@@ -125,10 +125,10 @@ const QuranExplorer: React.FC = () => {
       
       {!selectedSurah ? (
         <>
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-12 border-b border-slate-200 dark:border-slate-800">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-12 border-b border-slate-200 dark:border-slate-800 px-2">
             <div className="space-y-4">
               <h2 className="text-4xl md:text-6xl font-black tracking-tighter text-slate-900 dark:text-white playfair italic">The Revelation</h2>
-              <p className="text-slate-500 dark:text-slate-400 text-base font-medium max-w-md">Explore the 114 Surahs of the Al-Malik Archive with pure clarity.</p>
+              <p className="text-slate-500 dark:text-slate-400 text-sm md:text-base font-medium max-w-md">Explore the 114 Surahs of the Al-Malik Archive with pure clarity.</p>
             </div>
             <div className="relative w-full md:w-96 group">
               <div className="absolute inset-0 bg-gold/10 blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity pointer-events-none"></div>
@@ -143,24 +143,30 @@ const QuranExplorer: React.FC = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 px-2">
             {filteredSurahs.map((surah) => (
               <div 
                 key={surah.number} 
                 onClick={() => handleSurahClick(surah)}
-                className="glass-ui p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] cursor-pointer bg-white dark:bg-navy-900 border border-slate-100 dark:border-slate-800 hover:border-gold/40 hover:shadow-2xl transition-all flex flex-row items-center justify-between group gap-3 overflow-hidden"
+                className="glass-ui p-5 md:p-6 rounded-[2rem] md:rounded-[2.5rem] cursor-pointer bg-white dark:bg-navy-900 border border-slate-100 dark:border-slate-800 hover:border-gold/40 hover:shadow-2xl transition-all grid grid-cols-[40px_1fr_auto] md:grid-cols-[48px_1fr_auto] items-center group gap-3 overflow-hidden min-h-[90px]"
               >
-                <div className="flex items-center gap-4 min-w-0">
-                  <div className="w-10 h-10 md:w-14 md:h-14 shrink-0 rounded-2xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-[10px] md:text-sm font-black text-slate-400 group-hover:bg-gold group-hover:text-white transition-all shadow-inner">
-                    {surah.number}
-                  </div>
-                  <div className="min-w-0 overflow-hidden">
-                    <h4 className="text-sm md:text-base font-black text-slate-800 dark:text-slate-100 truncate">{surah.englishName}</h4>
-                    <p className="text-[8px] md:text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em] truncate">{surah.englishNameTranslation}</p>
-                  </div>
+                <div className="w-10 h-10 md:w-12 md:h-12 shrink-0 rounded-xl md:rounded-2xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-[10px] md:text-xs font-black text-slate-400 group-hover:bg-gold group-hover:text-white transition-all shadow-inner">
+                  {surah.number}
                 </div>
+                
+                <div className="min-w-0 flex flex-col justify-center">
+                  <h4 className="text-xs md:text-sm font-black text-slate-800 dark:text-slate-100 truncate pr-1">
+                    {surah.englishName}
+                  </h4>
+                  <p className="text-[8px] md:text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.05em] truncate">
+                    {surah.englishNameTranslation}
+                  </p>
+                </div>
+
                 <div className="text-right shrink-0">
-                  <p className="arabic-text text-xl md:text-2xl text-slate-600 dark:text-slate-300 group-hover:text-gold transition-colors">{surah.name}</p>
+                  <p className="arabic-text text-xl md:text-2xl text-slate-600 dark:text-slate-300 group-hover:text-gold transition-colors leading-none">
+                    {surah.name}
+                  </p>
                 </div>
               </div>
             ))}
@@ -200,52 +206,52 @@ const QuranExplorer: React.FC = () => {
 
           <div className="reading-mode-active space-y-12">
             {selectedSurah.number !== 1 && selectedSurah.number !== 9 && (
-              <div className="text-center py-16 bg-gold/5 rounded-[4rem] border border-gold/10">
-                <p className="arabic-text text-5xl text-slate-800 dark:text-white text-glow">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</p>
+              <div className="text-center py-16 bg-gold/5 rounded-[4rem] border border-gold/10 mx-2">
+                <p className="arabic-text text-4xl md:text-5xl text-slate-800 dark:text-white text-glow">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</p>
               </div>
             )}
             
-            <div className="space-y-6">
+            <div className="space-y-6 px-2">
               {ayahs.map((ayah) => (
                 <div 
                   id={`ayah-${ayah.number}`}
                   key={ayah.number} 
-                  className={`relative group p-10 lg:p-14 rounded-[3.5rem] transition-all duration-700 border ${
+                  className={`relative group p-8 md:p-10 lg:p-14 rounded-[3rem] md:rounded-[3.5rem] transition-all duration-700 border ${
                     playingAyah === ayah.number 
-                      ? 'bg-gold/5 dark:bg-gold/10 border-gold shadow-2xl scale-[1.02]' 
+                      ? 'bg-gold/5 dark:bg-gold/10 border-gold shadow-2xl scale-[1.01]' 
                       : 'bg-white dark:bg-navy-900/40 border-slate-50 dark:border-slate-800/50 hover:border-gold/20'
                   }`}
                 >
-                  <div className="flex flex-col md:flex-row-reverse items-start gap-12">
-                    <div className="flex flex-row md:flex-col items-center gap-5 shrink-0 self-center md:self-start">
-                      <div className="w-14 h-14 rounded-full border-2 border-slate-100 dark:border-slate-800 flex items-center justify-center text-xs font-black text-slate-500 group-hover:border-gold group-hover:text-gold transition-all shadow-sm">
+                  <div className="flex flex-col md:flex-row-reverse items-start gap-8 md:gap-12">
+                    <div className="flex flex-row md:flex-col items-center gap-4 shrink-0 self-center md:self-start">
+                      <div className="w-12 h-12 md:w-14 md:h-14 rounded-full border-2 border-slate-100 dark:border-slate-800 flex items-center justify-center text-xs font-black text-slate-500 group-hover:border-gold group-hover:text-gold transition-all shadow-sm">
                         {ayah.number}
                       </div>
                       {ayah.audio && (
                         <button 
                           onClick={() => toggleAudio(ayah.number, ayah.audio!)}
-                          className={`p-4 rounded-2xl transition-all shadow-md ${playingAyah === ayah.number ? 'bg-gold text-white scale-110' : 'bg-slate-50 dark:bg-navy-800 text-slate-400 dark:text-slate-500 hover:text-gold hover:bg-gold/10'}`}
+                          className={`p-3 md:p-4 rounded-xl md:rounded-2xl transition-all shadow-md ${playingAyah === ayah.number ? 'bg-gold text-white scale-110' : 'bg-slate-50 dark:bg-navy-800 text-slate-400 dark:text-slate-500 hover:text-gold hover:bg-gold/10'}`}
                         >
                           {playingAyah === ayah.number ? (
                             <div className="flex items-center gap-1.5">
-                               <div className="w-1 h-4 bg-white animate-pulse"></div>
-                               <div className="w-1 h-6 bg-white animate-pulse delay-75"></div>
-                               <div className="w-1 h-4 bg-white animate-pulse delay-150"></div>
+                               <div className="w-1 h-3 md:h-4 bg-white animate-pulse"></div>
+                               <div className="w-1 h-5 md:h-6 bg-white animate-pulse delay-75"></div>
+                               <div className="w-1 h-3 md:h-4 bg-white animate-pulse delay-150"></div>
                             </div>
                           ) : (
-                            <SpeakerIcon className="w-6 h-6" />
+                            <SpeakerIcon className="w-5 h-5 md:w-6 md:h-6" />
                           )}
                         </button>
                       )}
                     </div>
 
-                    <div className="flex-1 space-y-10 w-full">
-                      <p className={`arabic-text text-4xl md:text-5xl lg:text-7xl text-right leading-[2] transition-colors duration-700 ${playingAyah === ayah.number ? 'text-gold' : 'text-slate-800 dark:text-slate-100'}`}>
+                    <div className="flex-1 space-y-8 md:space-y-10 w-full">
+                      <p className={`arabic-text text-3xl md:text-5xl lg:text-7xl text-right leading-[1.8] md:leading-[2] transition-colors duration-700 ${playingAyah === ayah.number ? 'text-gold' : 'text-slate-800 dark:text-slate-100'}`}>
                         {selectedSurah.number !== 1 && ayah.number === 1 ? ayah.text.replace('بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ', '') : ayah.text}
                       </p>
                       
-                      <div className="pt-10 border-t border-slate-50 dark:border-slate-800/50">
-                        <p className="text-xl md:text-2xl text-slate-600 dark:text-slate-400 font-medium leading-relaxed max-w-4xl italic">
+                      <div className="pt-8 md:pt-10 border-t border-slate-50 dark:border-slate-800/50">
+                        <p className="text-lg md:text-xl lg:text-2xl text-slate-600 dark:text-slate-400 font-medium leading-relaxed max-w-4xl italic">
                           {ayah.translation}
                         </p>
                       </div>
