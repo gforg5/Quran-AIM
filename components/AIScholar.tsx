@@ -3,7 +3,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { GoogleGenAI, LiveServerMessage, Modality } from '@google/genai';
 import { getIslamicGuidance, decodeAudio, decodeAudioData } from '../services/geminiService';
 import { ChatMessage } from '../types';
-import { MalikLogo, SparklesIcon, MicIcon, SpeakerIcon, ArrowLeftIcon, TrashIcon, CopyIcon, ShareIcon, LoginIcon } from './Icons';
+import { MalikLogo, SparklesIcon, MicIcon, SpeakerIcon, ArrowLeftIcon, LoginIcon } from './Icons';
 
 function encode(bytes: Uint8Array) {
   let binary = '';
@@ -73,18 +73,7 @@ const AIScholar: React.FC = () => {
     scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, loading]);
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    const name = (e.currentTarget as any).username.value.trim();
-    if (name) {
-      setUserId(name);
-      localStorage.setItem('almalik_user', name);
-      setIsLoggingIn(false);
-    }
-  };
-
-  const startLiveVoiceSession = async () => {
-    // Critical for Mobile: AudioContext must be resumed on user gesture
+  const resumeContexts = async () => {
     if (!audioContextRef.current) {
       audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
       outputNodeRef.current = audioContextRef.current.createGain();
@@ -96,6 +85,21 @@ const AIScholar: React.FC = () => {
       inputAudioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 16000 });
     }
     if (inputAudioContextRef.current.state === 'suspended') await inputAudioContextRef.current.resume();
+  };
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    const name = (e.currentTarget as any).username.value.trim();
+    if (name) {
+      setUserId(name);
+      localStorage.setItem('almalik_user', name);
+      setIsLoggingIn(false);
+    }
+  };
+
+  const startLiveVoiceSession = async () => {
+    setLoading(true);
+    await resumeContexts();
 
     setIsVoiceMode(true);
     setIsLiveActive(true);
@@ -154,15 +158,18 @@ const AIScholar: React.FC = () => {
         }
       });
       liveSessionRef.current = await sessionPromise;
+      setLoading(false);
     } catch (err) {
       console.error("Mic error", err);
       setIsVoiceMode(false);
+      setLoading(false);
     }
   };
 
   const handleSend = async (overrideInput?: string) => {
     const textToSend = overrideInput || input;
     if (!textToSend.trim() || loading) return;
+    await resumeContexts(); // Ensure audio context is ready if needed
     setMessages(prev => [...prev, { id: Date.now().toString(), role: 'user', text: textToSend, timestamp: new Date() }]);
     setInput('');
     setLoading(true);
@@ -174,22 +181,22 @@ const AIScholar: React.FC = () => {
         timestamp: new Date(), groundingUrls: response.urls 
       }]);
     } catch (err) {
-      setMessages(prev => [...prev, { id: Date.now().toString(), role: 'model', text: "Connection issues. Please retry.", timestamp: new Date() }]);
+      setMessages(prev => [...prev, { id: Date.now().toString(), role: 'model', text: "Connection issues. Please check your network and retry.", timestamp: new Date() }]);
     } finally {
       setLoading(false);
     }
   };
 
   if (isLoggingIn) return (
-    <div className="flex flex-col h-[calc(100vh-10rem)] items-center justify-center p-6 px-2">
+    <div className="flex flex-col h-[calc(100vh-10rem)] items-center justify-center p-6">
        <div className="glass-premium p-8 md:p-12 rounded-[2.5rem] w-full max-w-sm shadow-2xl border border-gold/20 space-y-8">
           <div className="text-center space-y-4">
             <LoginIcon className="w-12 h-12 text-gold mx-auto" />
-            <h2 className="text-xl font-black text-navy-950 dark:text-white uppercase tracking-tighter">Scholarly Identity</h2>
+            <h2 className="text-xl font-black text-navy-950 dark:text-white uppercase tracking-tighter">Enter Sanctuary</h2>
           </div>
           <form onSubmit={handleLogin} className="space-y-4">
              <input name="username" type="text" placeholder="Your Name" className="w-full py-4 px-6 bg-slate-50 dark:bg-navy-900 rounded-2xl font-bold focus:ring-2 focus:ring-gold outline-none" required />
-             <button type="submit" className="w-full py-4 bg-gold text-navy-950 font-black rounded-2xl uppercase tracking-widest text-[10px]">Enter Sanctuary</button>
+             <button type="submit" className="w-full py-4 bg-gold text-navy-950 font-black rounded-2xl uppercase tracking-widest text-[10px]">ENTER</button>
           </form>
        </div>
     </div>
@@ -203,45 +210,54 @@ const AIScholar: React.FC = () => {
           <MalikLogo className="w-16 md:w-24 text-gold" />
         </div>
       </div>
-      <p className="text-white text-lg italic px-4">{liveTranscription || "Listening..."}</p>
+      <p className="text-white text-lg italic px-4 font-black tracking-widest uppercase">{liveTranscription || "CONNECTING..."}</p>
     </div>
   );
 
   return (
-    <div className="flex flex-col h-[calc(100vh-10rem)] md:h-[calc(100vh-120px)] bg-white dark:bg-navy-900 rounded-[2.5rem] shadow-2xl border border-gold/10 overflow-hidden">
-      <div className="bg-navy-950 p-4 text-white flex items-center justify-between shrink-0">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gold rounded-lg flex items-center justify-center text-navy-950" onClick={() => setUserId('')}>
-            <MalikLogo className="w-6 h-6" />
+    <div className="flex flex-col h-[calc(100dvh-10rem)] md:h-[calc(100vh-120px)] bg-white dark:bg-navy-900 rounded-[1.5rem] md:rounded-[2.5rem] shadow-2xl border border-gold/10 overflow-hidden">
+      <div className="bg-navy-950 p-3 md:p-4 text-white flex items-center justify-between shrink-0">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 md:w-10 md:h-10 bg-gold rounded-lg flex items-center justify-center text-navy-950">
+            <MalikLogo className="w-5 h-5 md:w-6 md:h-6" />
           </div>
-          <span className="font-black text-[10px] uppercase tracking-widest">{userId}'s Vault</span>
+          <span className="font-black text-[8px] md:text-[10px] uppercase tracking-widest truncate max-w-[120px]">{userId}'s Sanctuary</span>
         </div>
-        <button onClick={startLiveVoiceSession} className="p-2.5 bg-white/5 hover:bg-gold hover:text-navy-950 rounded-lg transition-all border border-white/5">
-           <MicIcon className="w-4 h-4" />
+        <button onClick={startLiveVoiceSession} className="p-2 md:p-2.5 bg-white/5 hover:bg-gold hover:text-navy-950 rounded-lg transition-all border border-white/5">
+           <MicIcon className="w-3 h-3 md:w-4 md:h-4" />
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 custom-scrollbar">
+      <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 md:space-y-6 custom-scrollbar">
         {messages.map((m) => (
           <div key={m.id} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'} animate-in fade-in`}>
-            <div className={`max-w-[90%] p-4 rounded-2xl ${m.role === 'user' ? 'bg-navy-800 text-white rounded-tr-none' : 'bg-slate-50 dark:bg-navy-900 text-slate-700 dark:text-slate-100 rounded-tl-none border border-gold/5'}`}>
-              <div className="text-xs md:text-sm leading-relaxed">{m.text}</div>
+            <div className={`max-w-[90%] md:max-w-[80%] p-3 md:p-4 rounded-xl md:rounded-2xl ${m.role === 'user' ? 'bg-navy-800 text-white rounded-tr-none' : 'bg-slate-50 dark:bg-navy-800/50 text-slate-700 dark:text-slate-100 rounded-tl-none border border-gold/5'}`}>
+              <div className="text-[10px] md:text-sm leading-relaxed whitespace-pre-wrap">{m.text}</div>
               {m.groundingUrls && (
                 <div className="mt-2 flex flex-wrap gap-1">
-                  {m.groundingUrls.map((u, i) => <a key={i} href={u.uri} target="_blank" className="text-[8px] px-1.5 py-0.5 bg-gold/10 text-gold rounded border border-gold/20">{u.title}</a>)}
+                  {m.groundingUrls.map((u, i) => <a key={i} href={u.uri} target="_blank" className="text-[7px] px-1.5 py-0.5 bg-gold/10 text-gold rounded border border-gold/20 truncate max-w-[150px]">{u.title}</a>)}
                 </div>
               )}
             </div>
           </div>
         ))}
-        {loading && <div className="flex gap-1 p-4"><div className="w-1 h-1 bg-gold rounded-full animate-bounce"></div><div className="w-1 h-1 bg-gold rounded-full animate-bounce delay-75"></div></div>}
+        {loading && <div className="flex gap-1 p-2"><div className="w-1 h-1 bg-gold rounded-full animate-bounce"></div><div className="w-1 h-1 bg-gold rounded-full animate-bounce delay-75"></div><div className="w-1 h-1 bg-gold rounded-full animate-bounce delay-150"></div></div>}
         <div ref={scrollRef} />
       </div>
 
-      <div className="p-4 bg-white dark:bg-navy-900 border-t border-gold/10">
+      <div className="p-3 md:p-4 bg-white dark:bg-navy-900 border-t border-gold/10">
         <div className="flex gap-2 max-w-3xl mx-auto">
-          <input type="text" value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleSend()} placeholder="Ask the Scholar..." className="flex-1 py-3 px-5 rounded-xl bg-slate-50 dark:bg-navy-800 border-none outline-none font-bold text-xs" />
-          <button onClick={() => handleSend()} className="p-3 bg-gold text-navy-950 rounded-xl"><SparklesIcon className="w-4 h-4" /></button>
+          <input 
+            type="text" 
+            value={input} 
+            onChange={(e) => setInput(e.target.value)} 
+            onKeyDown={(e) => e.key === 'Enter' && handleSend()} 
+            placeholder="Ask your guide..." 
+            className="flex-1 py-2 md:py-3 px-4 md:px-5 rounded-xl bg-slate-50 dark:bg-navy-800 border-none outline-none font-bold text-[10px] md:text-xs" 
+          />
+          <button onClick={() => handleSend()} className="p-2 md:p-3 bg-gold text-navy-950 rounded-xl shadow-lg hover:scale-105 active:scale-95 transition-all">
+            <SparklesIcon className="w-3 h-3 md:w-4 md:h-4" />
+          </button>
         </div>
       </div>
     </div>

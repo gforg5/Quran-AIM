@@ -6,7 +6,7 @@ import { SearchIcon, ArrowLeftIcon, BayanLogo, SpeakerIcon } from './Icons';
 const QuranExplorer: React.FC = () => {
   const [surahs, setSurahs] = useState<Surah[]>([]);
   const [selectedSurah, setSelectedSurah] = useState<Surah | null>(null);
-  const [ayahs, setAyahs] = useState<Ayah[]>([]);
+  const [ayahs, setAyahs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [playingAyah, setPlayingAyah] = useState<number | null>(null);
@@ -75,13 +75,15 @@ const QuranExplorer: React.FC = () => {
     if (audioRef.current) audioRef.current.pause();
     
     try {
-      const res = await fetch(`https://api.alquran.cloud/v1/surah/${surahNumber}/editions/quran-uthmani,en.sahih,ar.alafasy`);
+      // Fetching Uthmani Arabic, Sahih English, and Jalandhry Urdu
+      const res = await fetch(`https://api.alquran.cloud/v1/surah/${surahNumber}/editions/quran-uthmani,en.sahih,ur.jalandhry,ar.alafasy`);
       const data = await res.json();
       const combined = data.data[0].ayahs.map((a: any, i: number) => ({
         number: a.numberInSurah,
         text: a.text,
         translation: data.data[1].ayahs[i].text,
-        audio: data.data[2].ayahs[i].audio
+        urduTranslation: data.data[2].ayahs[i].text,
+        audio: data.data[3].ayahs[i].audio
       }));
       setAyahs(combined);
       
@@ -106,7 +108,6 @@ const QuranExplorer: React.FC = () => {
     if (audioRef.current) {
       audioRef.current.src = audioUrl;
       audioRef.current.play().catch(() => {
-        // Handle play error, possibly user interaction needed
         setIsAutoPlaying(false);
       });
       setPlayingAyah(ayahNumber);
@@ -117,7 +118,7 @@ const QuranExplorer: React.FC = () => {
 
   const handleAudioEnd = () => {
     if (isAutoPlaying && playingAyah !== null) {
-      const nextIndex = playingAyah; // playingAyah is 1-indexed numberInSurah
+      const nextIndex = playingAyah; 
       if (nextIndex < ayahs.length) {
         playAyah(ayahs[nextIndex].number, ayahs[nextIndex].audio!);
       } else {
@@ -138,7 +139,7 @@ const QuranExplorer: React.FC = () => {
   if (loading && surahs.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-[50vh] gap-6">
-        <BayanLogo className="w-16 h-16 animate-spin-slow text-gold" />
+        <BayanLogo className="w-16 h-16 animate-sacred-glow text-gold" />
         <p className="text-[10px] font-black uppercase tracking-[0.5em] text-slate-500">Connecting...</p>
       </div>
     );
@@ -153,7 +154,7 @@ const QuranExplorer: React.FC = () => {
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-10 border-b border-slate-200 dark:border-slate-800 px-2">
             <div className="space-y-2">
               <h2 className="text-4xl md:text-6xl font-black tracking-tighter text-slate-900 dark:text-white playfair italic">THE HOLY QURAN</h2>
-              <p className="text-slate-500 dark:text-slate-400 text-xs md:text-base font-bold uppercase tracking-widest">Read and listen to all 114 Surahs with translation</p>
+              <p className="text-slate-500 dark:text-slate-400 text-xs md:text-base font-bold uppercase tracking-widest">Read and listen to all 114 Surahs with dual translations</p>
             </div>
             <div className="relative w-full md:w-96 group">
               <input 
@@ -176,7 +177,6 @@ const QuranExplorer: React.FC = () => {
                   onClick={() => handleSurahClick(surah)}
                   className="glass-ui p-6 rounded-[2rem] cursor-pointer bg-white dark:bg-navy-900 border border-slate-100 dark:border-slate-800 hover:border-gold/40 hover:shadow-2xl transition-all flex flex-col group relative overflow-hidden"
                 >
-                  {/* Progress Bar */}
                   <div className="absolute top-0 left-0 h-1 bg-gold transition-all duration-1000" style={{ width: `${progress}%` }}></div>
                   
                   <div className="flex items-center justify-between mb-4">
@@ -277,14 +277,17 @@ const QuranExplorer: React.FC = () => {
                       )}
                     </div>
 
-                    <div className="flex-1 space-y-6 md:space-y-10 w-full">
+                    <div className="flex-1 space-y-4 md:space-y-8 w-full">
                       <p className={`arabic-text text-2xl md:text-5xl lg:text-6xl text-right leading-[1.8] md:leading-[2] transition-colors duration-500 ${playingAyah === ayah.number ? 'text-gold' : 'text-slate-800 dark:text-slate-100'}`}>
                         {selectedSurah.number !== 1 && ayah.number === 1 ? ayah.text.replace('بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ', '') : ayah.text}
                       </p>
                       
-                      <div className="pt-6 md:pt-10 border-t border-slate-50 dark:border-slate-800/50">
-                        <p className="text-sm md:text-xl lg:text-2xl text-slate-600 dark:text-slate-400 font-medium leading-relaxed italic">
+                      <div className="pt-6 md:pt-10 border-t border-slate-50 dark:border-slate-800/50 space-y-4">
+                        <p className="text-sm md:text-xl text-slate-600 dark:text-slate-400 font-medium leading-relaxed italic">
                           {ayah.translation}
+                        </p>
+                        <p className="arabic-text text-lg md:text-2xl text-emerald-700 dark:text-emerald-400 font-bold leading-relaxed">
+                          {ayah.urduTranslation}
                         </p>
                       </div>
                     </div>

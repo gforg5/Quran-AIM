@@ -212,7 +212,7 @@ const ArtStudio: React.FC = () => {
                <img src={imageUrl} className="w-full h-full object-contain transition-transform duration-1000 group-hover:scale-[1.02]" />
              ) : (
                <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-8 lg:p-12 gap-4 lg:gap-8">
-                  <MalikLogo className="w-16 h-16 lg:w-24 text-gold/10 animate-spin-slow" />
+                  <MalikLogo className="w-16 h-16 lg:w-24 text-gold/10 animate-sacred-glow" />
                   <div className="space-y-2">
                     <p className="text-lg lg:text-xl font-black text-emerald-950 dark:text-white uppercase tracking-tighter">Artistic Void</p>
                     <p className="text-[10px] lg:text-xs font-medium text-slate-400 px-6">Your visionary creation will manifest here from the ether.</p>
@@ -229,7 +229,7 @@ const ArtStudio: React.FC = () => {
                <div className="absolute inset-0 bg-emerald-950/80 backdrop-blur-xl flex flex-col items-center justify-center z-20 animate-in fade-in">
                   <div className="relative">
                     <div className="w-16 h-16 lg:w-24 lg:h-24 border-t-4 border-gold rounded-full animate-spin shadow-[0_0_50px_rgba(212,175,55,0.5)]"></div>
-                    <MalikLogo className="w-8 h-8 lg:w-10 lg:h-10 text-gold absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-pulse" />
+                    <MalikLogo className="w-8 h-8 lg:w-10 lg:h-10 text-gold absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-sacred-glow" />
                   </div>
                   <div className="mt-8 text-center space-y-3 px-6">
                     <p className="text-gold font-black uppercase tracking-[0.4em] text-[10px] lg:text-xs animate-pulse">{loadingStatus}</p>

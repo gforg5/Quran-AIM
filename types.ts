@@ -12,6 +12,7 @@ export interface Ayah {
   number: number;
   text: string;
   translation?: string;
+  urduTranslation?: string;
   audio?: string;
   numberInSurah?: number;
   surah?: Surah;
@@ -33,6 +34,7 @@ export interface Hadith {
   hadithEnglish?: string;
   narrator: string;
   text: string;
+  urduText?: string;
   source: string;
 }
 

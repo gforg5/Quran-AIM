@@ -98,7 +98,13 @@ export const BookOpenIcon: React.FC<IconProps> = ({ className }) => (
 
 export const ToolsIcon: React.FC<IconProps> = ({ className }) => (
   <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" className={className} strokeWidth={2}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75a4.5 4.5 0 01-4.884 4.484c-1.076-.091-2.264.071-2.95.904l-7.152 8.684a2.25 2.25 0 01-3.511-2.842l8.684-7.152c.833-.686.995-1.874.904-2.95a4.5 4.5 0 014.484-4.884c.338.028.673.076 1 .144M19.5 7.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5L14.5 9H9.5L12 4.5ZM12 19.5L9.5 15H14.5L12 19.5ZM4.5 12L9 9.5V14.5L4.5 12ZM19.5 12L15 14.5V9.5L19.5 12ZM12 9.5L14.5 12L12 14.5L9.5 12L12 9.5Z" />
+  </svg>
+);
+
+export const CharityIcon: React.FC<IconProps> = ({ className }) => (
+  <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" className={className} strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
   </svg>
 );
 

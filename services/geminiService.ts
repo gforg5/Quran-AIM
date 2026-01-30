@@ -1,20 +1,28 @@
 
 import { GoogleGenAI, Type, GenerateContentResponse, Modality } from "@google/genai";
 
-// Use gemini-3-pro-preview for complex reasoning Islamic scholarship tasks.
+// Use gemini-3-flash-preview for high speed and reliable Islamic scholarship tasks.
 export const getIslamicGuidance = async (query: string, history: any[]) => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   
   try {
+    // Incorporate history into the contents for context-aware conversation
+    const contents = history.map(m => ({
+      role: m.role,
+      parts: [{ text: m.text }]
+    }));
+    contents.push({ role: 'user', parts: [{ text: query }] });
+
     const response = await ai.models.generateContent({
-      model: 'gemini-3-pro-preview',
-      contents: [{ parts: [{ text: query }] }],
+      model: 'gemini-3-flash-preview',
+      contents: contents,
       config: {
-        systemInstruction: "You are 'Al-Malik AI', a world-class Islamic scholar assistant. Provide highly accurate, professional, and cited information based on the Quran, Sahih Bukhari, Sahih Muslim, and major Madhahib. If referring to a book, specify the author and chapter. Use Google Search to verify recent fatwas or scholarly events.",
+        systemInstruction: "You are 'Al-Malik AI', a world-class Islamic scholar assistant. Provide highly accurate, professional, and cited information based on the Quran, Sahih Bukhari, Sahih Muslim, and major Madhahib. Be concise and fast. If the user asks in English, provide English response but include relevant Urdu translations or verses where beneficial. If the user asks in Urdu, respond in Urdu. Always maintain a respectful and sacred tone. Use Google Search for news or recent context.",
         tools: [{ googleSearch: {} }]
       }
     });
 
+    // Always extract grounding URLs when using googleSearch tool
     const groundingChunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
     const urls = groundingChunks.map((chunk: any) => ({
       title: chunk.web?.title || 'Source',
@@ -45,6 +53,7 @@ export const generateIslamicArt = async (prompt: string, aspectRatio: string = "
     }
   });
 
+  // Find the image part in the response
   for (const part of response.candidates?.[0]?.content.parts || []) {
     if (part.inlineData) {
       return `data:image/png;base64,${part.inlineData.data}`;
@@ -63,7 +72,7 @@ export const editIslamicImage = async (base64Image: string, prompt: string, aspe
     contents: {
       parts: [
         { inlineData: { data, mimeType } },
-        { text: `Edit this Islamic artwork based on this prompt: ${prompt}. Maintain sacred and professional aesthetic.` }
+        { text: `Edit this Islamic artwork based on this prompt: ${prompt}. Maintain sacred aesthetic.` }
       ],
     },
     config: {
@@ -73,6 +82,7 @@ export const editIslamicImage = async (base64Image: string, prompt: string, aspe
     }
   });
 
+  // Find the image part in the response
   for (const part of response.candidates?.[0]?.content.parts || []) {
     if (part.inlineData) {
       return `data:image/png;base64,${part.inlineData.data}`;
@@ -102,6 +112,7 @@ export const speakGuidance = async (text: string) => {
   return base64Audio;
 };
 
+// Custom manual decode function following guidelines
 export function decodeAudio(base64: string) {
   const binaryString = atob(base64);
   const len = binaryString.length;
@@ -112,6 +123,7 @@ export function decodeAudio(base64: string) {
   return bytes;
 }
 
+// Custom manual decode function following guidelines for raw PCM streaming
 export async function decodeAudioData(
   data: Uint8Array,
   ctx: AudioContext,
