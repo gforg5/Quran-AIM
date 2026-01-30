@@ -6,6 +6,7 @@ import { AdviceIcon, SparklesIcon, MalikLogo } from './Icons';
 const AdviceHub: React.FC = () => {
   const [topic, setTopic] = useState('');
   const [advice, setAdvice] = useState<string | null>(null);
+  const [groundingUrls, setGroundingUrls] = useState<{title: string; uri: string}[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -13,9 +14,12 @@ const AdviceHub: React.FC = () => {
     if (!topic.trim()) return;
     setLoading(true);
     setError(null);
+    setAdvice(null);
+    setGroundingUrls([]);
     try {
       const response = await getIslamicGuidance(`Provide practical, compassionate Islamic advice regarding this life situation: ${topic}. Focus on Quranic principles and Prophetic wisdom.`, []);
       setAdvice(response.text);
+      setGroundingUrls(response.urls);
     } catch (err) {
       setError("The consultation stream was interrupted. Please rephrase your query.");
     } finally {
@@ -89,6 +93,25 @@ const AdviceHub: React.FC = () => {
                 <div className="prose prose-sm dark:prose-invert max-w-none text-slate-600 dark:text-emerald-100 leading-[1.8] font-medium whitespace-pre-wrap">
                    {advice}
                 </div>
+                {groundingUrls.length > 0 && (
+                  <div className="mt-8 pt-8 border-t border-gold/10">
+                    <p className="text-[10px] font-black text-gold uppercase tracking-[0.4em] mb-4">Scholarly References</p>
+                    <div className="flex flex-col gap-3">
+                      {groundingUrls.map((url, idx) => (
+                        <a 
+                          key={idx} 
+                          href={url.uri} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="text-xs font-bold text-slate-400 hover:text-gold transition-colors flex items-center gap-2"
+                        >
+                          <div className="w-1 h-1 bg-gold rounded-full"></div>
+                          {url.title}
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
              </div>
            ) : (
              <div className="flex-1 glass-premium rounded-[3.5rem] border border-dashed border-gold/30 flex flex-col items-center justify-center text-center p-12 opacity-50">
