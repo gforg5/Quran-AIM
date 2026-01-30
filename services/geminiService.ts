@@ -1,19 +1,7 @@
 
 import { GoogleGenAI, Type, GenerateContentResponse, Modality } from "@google/genai";
 
-// Enhanced instruction to remove markdown formatting (asterisks, bolding)
-const SCHOLAR_INSTRUCTION = `You are 'Al-Malik AI', a world-class Islamic scholar assistant. 
-Provide highly accurate, professional, and clear answers.
-
-STRICT FORMATTING RULES:
-1. ALWAYS respond in plain text only. 
-2. NEVER use markdown symbols like asterisks (*) or double asterisks (**).
-3. DO NOT use hashtags (#) for headings.
-4. Use standard capitalization and clear paragraphs for structure.
-5. Use plain numbers (1. 2. 3.) for lists, not bullets.
-6. If referring to Quran or Hadith, cite them clearly in plain text (e.g., Surah Al-Baqarah, Verse 255).
-7. Be compassionate, authoritative, and thorough. Avoid being terse; provide complete explanations.`;
-
+// Use gemini-3-pro-preview for complex reasoning Islamic scholarship tasks.
 export const getIslamicGuidance = async (query: string, history: any[]) => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   
@@ -22,7 +10,7 @@ export const getIslamicGuidance = async (query: string, history: any[]) => {
       model: 'gemini-3-pro-preview',
       contents: [{ parts: [{ text: query }] }],
       config: {
-        systemInstruction: SCHOLAR_INSTRUCTION,
+        systemInstruction: "You are 'Al-Malik AI', a world-class Islamic scholar assistant. Provide highly accurate, professional, and cited information based on the Quran, Sahih Bukhari, Sahih Muslim, and major Madhahib. If referring to a book, specify the author and chapter. Use Google Search to verify recent fatwas or scholarly events.",
         tools: [{ googleSearch: {} }]
       }
     });
@@ -98,7 +86,7 @@ export const speakGuidance = async (text: string) => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   const response = await ai.models.generateContent({
     model: "gemini-2.5-flash-preview-tts",
-    contents: [{ parts: [{ text: `Read this Islamic guidance clearly: ${text}` }] }],
+    contents: [{ parts: [{ text: `Explain clearly as a scholar: ${text}` }] }],
     config: {
       responseModalities: [Modality.AUDIO],
       speechConfig: {

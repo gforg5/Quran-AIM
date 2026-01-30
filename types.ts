@@ -47,13 +47,6 @@ export interface ChatMessage {
   groundingUrls?: { title: string; uri: string }[];
 }
 
-export interface ChatSession {
-  id: string;
-  title: string;
-  messages: ChatMessage[];
-  updatedAt: number;
-}
-
 export interface LibraryItem {
   id: string;
   title: string;
@@ -67,7 +60,6 @@ export interface LibraryItem {
   description: string;
 }
 
-// Added GalleryItem interface to support ArtGallery component
 export interface GalleryItem {
   id: string;
   url: string;
