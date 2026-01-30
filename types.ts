@@ -26,9 +26,9 @@ export interface Bookmark {
 
 export interface Hadith {
   id: string;
-  collection?: string;
+  collection: string;
   bookNumber?: string;
-  hadithNumber?: string;
+  hadithNumber: string;
   hadithArabic?: string;
   hadithEnglish?: string;
   narrator: string;

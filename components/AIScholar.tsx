@@ -1,5 +1,5 @@
 
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { GoogleGenAI, LiveServerMessage, Modality } from '@google/genai';
 import { getIslamicGuidance, decodeAudio, decodeAudioData } from '../services/geminiService';
 import { ChatMessage } from '../types';
@@ -42,7 +42,6 @@ const AIScholar: React.FC = () => {
   const nextStartTimeRef = useRef<number>(0);
   const sourcesRef = useRef<Set<AudioBufferSourceNode>>(new Set());
 
-  // Load history based on user
   useEffect(() => {
     if (userId) {
       const saved = localStorage.getItem(`almalik_history_${userId}`);
@@ -64,7 +63,6 @@ const AIScholar: React.FC = () => {
     }
   }, [userId]);
 
-  // Save history
   useEffect(() => {
     if (userId && messages.length > 0) {
       localStorage.setItem(`almalik_history_${userId}`, JSON.stringify(messages));
@@ -85,106 +83,52 @@ const AIScholar: React.FC = () => {
     }
   };
 
-  const logout = () => {
-    setUserId('');
-    setIsLoggingIn(true);
-    localStorage.removeItem('almalik_user');
-  };
-
-  const deleteMessage = (id: string) => {
-    setMessages(prev => prev.filter(m => m.id !== id));
-  };
-
-  const copyMessage = (text: string) => {
-    navigator.clipboard.writeText(text);
-    alert("Copied to clipboard.");
-  };
-
-  const shareMessage = async (text: string) => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: 'Al-Malik Islamic Wisdom',
-          text: text,
-          url: window.location.href,
-        });
-      } catch (err) {
-        copyMessage(text);
-      }
-    } else {
-      copyMessage(text);
-    }
-  };
-
-  const clearAll = () => {
-    if (confirm("Clear all chat history for this account?")) {
-      setMessages([{ 
-        id: Date.now().toString(), 
-        role: 'model', 
-        text: "History cleared. How may I help you now?", 
-        timestamp: new Date() 
-      }]);
-    }
-  };
-
   const startLiveVoiceSession = async () => {
+    // Critical for Mobile: AudioContext must be resumed on user gesture
+    if (!audioContextRef.current) {
+      audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
+      outputNodeRef.current = audioContextRef.current.createGain();
+      outputNodeRef.current.connect(audioContextRef.current.destination);
+    }
+    if (audioContextRef.current.state === 'suspended') await audioContextRef.current.resume();
+
+    if (!inputAudioContextRef.current) {
+      inputAudioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 16000 });
+    }
+    if (inputAudioContextRef.current.state === 'suspended') await inputAudioContextRef.current.resume();
+
     setIsVoiceMode(true);
     setIsLiveActive(true);
     setLiveTranscription('Connecting...');
 
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     
-    if (!audioContextRef.current) {
-      audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
-      outputNodeRef.current = audioContextRef.current.createGain();
-      outputNodeRef.current.connect(audioContextRef.current.destination);
-    }
-    
-    if (!inputAudioContextRef.current) {
-      inputAudioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 16000 });
-    }
-
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      
       const sessionPromise = ai.live.connect({
         model: 'gemini-2.5-flash-native-audio-preview-12-2025',
         callbacks: {
           onopen: () => {
-            setLiveTranscription('I am listening...');
+            setLiveTranscription('Listening to your wisdom...');
             const source = inputAudioContextRef.current!.createMediaStreamSource(stream);
             const scriptProcessor = inputAudioContextRef.current!.createScriptProcessor(4096, 1, 1);
-            
-            scriptProcessor.onaudioprocess = (audioProcessingEvent) => {
-              const inputData = audioProcessingEvent.inputBuffer.getChannelData(0);
-              const l = inputData.length;
-              const int16 = new Int16Array(l);
-              for (let i = 0; i < l; i++) {
-                int16[i] = inputData[i] * 32768;
-              }
-              const pcmBlob = {
-                data: encode(new Uint8Array(int16.buffer)),
-                mimeType: 'audio/pcm;rate=16000',
-              };
-              sessionPromise.then((session) => {
-                session.sendRealtimeInput({ media: pcmBlob });
-              });
+            scriptProcessor.onaudioprocess = (e) => {
+              const inputData = e.inputBuffer.getChannelData(0);
+              const int16 = new Int16Array(inputData.length);
+              for (let i = 0; i < inputData.length; i++) int16[i] = inputData[i] * 32768;
+              const pcmBlob = { data: encode(new Uint8Array(int16.buffer)), mimeType: 'audio/pcm;rate=16000' };
+              sessionPromise.then(s => s.sendRealtimeInput({ media: pcmBlob }));
             };
-            
             source.connect(scriptProcessor);
             scriptProcessor.connect(inputAudioContextRef.current!.destination);
           },
           onmessage: async (message: LiveServerMessage) => {
-            if (message.serverContent?.outputTranscription) {
-              setLiveTranscription(message.serverContent.outputTranscription.text);
-            }
-
+            if (message.serverContent?.outputTranscription) setLiveTranscription(message.serverContent.outputTranscription.text);
             const base64Audio = message.serverContent?.modelTurn?.parts[0]?.inlineData?.data;
             if (base64Audio) {
               const ctx = audioContextRef.current!;
               nextStartTimeRef.current = Math.max(nextStartTimeRef.current, ctx.currentTime);
-              const audioBytes = decode(base64Audio);
-              const audioBuffer = await decodeAudioData(audioBytes, ctx, 24000, 1);
+              const audioBuffer = await decodeAudioData(decode(base64Audio), ctx, 24000, 1);
               const source = ctx.createBufferSource();
               source.buffer = audioBuffer;
               source.connect(outputNodeRef.current!);
@@ -193,31 +137,22 @@ const AIScholar: React.FC = () => {
               nextStartTimeRef.current += audioBuffer.duration;
               sourcesRef.current.add(source);
             }
-
             if (message.serverContent?.interrupted) {
-              for (const s of sourcesRef.current.values()) {
-                try { s.stop(); } catch(e) {}
-                sourcesRef.current.delete(s);
-              }
+              sourcesRef.current.forEach(s => { try { s.stop(); } catch(e) {} });
+              sourcesRef.current.clear();
               nextStartTimeRef.current = 0;
             }
           },
           onclose: () => setIsLiveActive(false),
-          onerror: (e) => {
-            console.error("Live Error", e);
-            setIsLiveActive(false);
-          }
+          onerror: () => setIsLiveActive(false)
         },
         config: {
           responseModalities: [Modality.AUDIO],
-          speechConfig: {
-            voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Kore' } }
-          },
-          systemInstruction: "You are the Al-Malik Voice Assistant. Provide concise Islamic guidance. Be warm, professional, and cite Quran when asked.",
+          speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Kore' } } },
+          systemInstruction: "You are the Al-Malik Voice Assistant. Concise and professional Islamic guidance.",
           outputAudioTranscription: {}
         }
       });
-      
       liveSessionRef.current = await sessionPromise;
     } catch (err) {
       console.error("Mic error", err);
@@ -225,216 +160,89 @@ const AIScholar: React.FC = () => {
     }
   };
 
-  const stopLiveVoiceSession = () => {
-    if (liveSessionRef.current) {
-      try { liveSessionRef.current.close(); } catch(e) {}
-      liveSessionRef.current = null;
-    }
-    setIsVoiceMode(false);
-    setIsLiveActive(false);
-    setLiveTranscription('');
-  };
-
   const handleSend = async (overrideInput?: string) => {
     const textToSend = overrideInput || input;
     if (!textToSend.trim() || loading) return;
-
-    const userMsg: ChatMessage = { 
-      id: Date.now().toString(), 
-      role: 'user', 
-      text: textToSend, 
-      timestamp: new Date() 
-    };
-    setMessages(prev => [...prev, userMsg]);
+    setMessages(prev => [...prev, { id: Date.now().toString(), role: 'user', text: textToSend, timestamp: new Date() }]);
     setInput('');
     setLoading(true);
-
     try {
-      // Pass copy of history
       const response = await getIslamicGuidance(textToSend, messages);
-      const modelMsg: ChatMessage = { 
-        id: (Date.now() + 1).toString(),
-        role: 'model', 
-        text: response.text || "Forgive me, the wisdom stream is currently quiet. Please rephrase.", 
-        timestamp: new Date(),
-        groundingUrls: response.urls
-      };
-      setMessages(prev => [...prev, modelMsg]);
-    } catch (err) {
       setMessages(prev => [...prev, { 
-        id: Date.now().toString(), 
-        role: 'model', 
-        text: "Connectivity error. The Al-Malik network is currently busy. Please retry.", 
-        timestamp: new Date() 
+        id: (Date.now() + 1).toString(),
+        role: 'model', text: response.text || "I apologize, the stream is silent. Please try again.", 
+        timestamp: new Date(), groundingUrls: response.urls 
       }]);
+    } catch (err) {
+      setMessages(prev => [...prev, { id: Date.now().toString(), role: 'model', text: "Connection issues. Please retry.", timestamp: new Date() }]);
     } finally {
       setLoading(false);
     }
   };
 
-  const suggestions = [
-    "Recite Al-Fatiha",
-    "What is Zakat?",
-    "Hadith on Kindness",
-    "Prayer Times Logic"
-  ];
-
-  if (isLoggingIn) {
-    return (
-      <div className="flex flex-col h-[calc(100vh-10rem)] md:h-[calc(100vh-120px)] items-center justify-center p-6 bg-slate-50 dark:bg-navy-950/20 rounded-[2rem] border border-gold/10">
-         <div className="glass-premium p-10 rounded-[3rem] w-full max-w-md shadow-2xl border border-gold/20 space-y-8 animate-in zoom-in duration-500">
-            <div className="text-center space-y-4">
-              <div className="w-16 h-16 bg-gold rounded-2xl flex items-center justify-center mx-auto shadow-xl">
-                 <LoginIcon className="w-8 h-8 text-navy-950" />
-              </div>
-              <h2 className="text-2xl font-black text-navy-950 dark:text-white uppercase tracking-tighter">Scholarly Identity</h2>
-              <p className="text-xs text-slate-500 font-bold uppercase tracking-widest italic">Enter a name to load your Archive</p>
-            </div>
-            
-            <form onSubmit={handleLogin} className="space-y-4">
-               <input 
-                name="username"
-                type="text" 
-                placeholder="Your Name (e.g. Mohsin)" 
-                className="w-full py-4 px-6 bg-slate-100 dark:bg-navy-900 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-gold outline-none transition-all"
-                required
-               />
-               <button type="submit" className="w-full py-4 bg-gold text-navy-950 font-black rounded-2xl uppercase tracking-widest text-xs hover:scale-105 transition-all shadow-xl">
-                 Enter Sanctuary
-               </button>
-            </form>
-         </div>
-      </div>
-    );
-  }
-
-  if (isVoiceMode) {
-    return (
-      <div className="fixed inset-0 z-[100] bg-navy-950 flex flex-col items-center justify-center p-6 text-center animate-in fade-in duration-500 overflow-hidden">
-        <button 
-          onClick={stopLiveVoiceSession}
-          className="absolute top-8 left-8 p-3 bg-white/5 text-white rounded-xl hover:bg-white/10 transition-all border border-white/5"
-        >
-          <ArrowLeftIcon className="w-5 h-5" />
-        </button>
-
-        <div className="relative mb-12">
-          <div className={`w-48 h-48 md:w-64 md:h-64 rounded-full border border-gold/20 flex items-center justify-center transition-all duration-1000 ${isLiveActive ? 'scale-105 shadow-[0_0_80px_rgba(212,175,55,0.15)]' : 'scale-100'}`}>
-            <div className={`w-32 h-32 md:w-40 md:h-40 bg-gold rounded-full flex items-center justify-center shadow-2xl transition-all duration-500 ${isLiveActive ? 'animate-pulse' : 'opacity-40'}`}>
-              <MalikLogo className="w-16 h-16 md:w-20 md:h-20 text-navy-950" />
-            </div>
-            {isLiveActive && <div className="absolute inset-0 border-2 border-gold/30 rounded-full animate-ping"></div>}
+  if (isLoggingIn) return (
+    <div className="flex flex-col h-[calc(100vh-10rem)] items-center justify-center p-6 px-2">
+       <div className="glass-premium p-8 md:p-12 rounded-[2.5rem] w-full max-w-sm shadow-2xl border border-gold/20 space-y-8">
+          <div className="text-center space-y-4">
+            <LoginIcon className="w-12 h-12 text-gold mx-auto" />
+            <h2 className="text-xl font-black text-navy-950 dark:text-white uppercase tracking-tighter">Scholarly Identity</h2>
           </div>
-        </div>
+          <form onSubmit={handleLogin} className="space-y-4">
+             <input name="username" type="text" placeholder="Your Name" className="w-full py-4 px-6 bg-slate-50 dark:bg-navy-900 rounded-2xl font-bold focus:ring-2 focus:ring-gold outline-none" required />
+             <button type="submit" className="w-full py-4 bg-gold text-navy-950 font-black rounded-2xl uppercase tracking-widest text-[10px]">Enter Sanctuary</button>
+          </form>
+       </div>
+    </div>
+  );
 
-        <div className="max-w-xl space-y-4 px-4">
-          <h2 className="text-xl md:text-2xl font-black text-white tracking-widest uppercase">Live Scholar Stream</h2>
-          <p className="text-slate-300 font-medium text-sm md:text-lg min-h-[3rem] italic">
-            {liveTranscription || "Waiting for your voice..."}
-          </p>
-          <div className="pt-6">
-            <span className={`text-[9px] font-black uppercase tracking-[0.4em] ${isLiveActive ? 'text-gold animate-pulse' : 'text-red-500'}`}>
-              {isLiveActive ? 'Active Consultation' : 'Stream Disconnected'}
-            </span>
-          </div>
+  if (isVoiceMode) return (
+    <div className="fixed inset-0 z-[100] bg-navy-950 flex flex-col items-center justify-center p-6 text-center">
+      <button onClick={() => { liveSessionRef.current?.close(); setIsVoiceMode(false); }} className="absolute top-8 left-8 p-3 text-white bg-white/5 rounded-xl"><ArrowLeftIcon className="w-5 h-5" /></button>
+      <div className="relative mb-12">
+        <div className={`w-40 h-40 md:w-64 md:h-64 rounded-full border border-gold/20 flex items-center justify-center ${isLiveActive ? 'animate-pulse' : ''}`}>
+          <MalikLogo className="w-16 md:w-24 text-gold" />
         </div>
       </div>
-    );
-  }
+      <p className="text-white text-lg italic px-4">{liveTranscription || "Listening..."}</p>
+    </div>
+  );
 
   return (
-    <div className="flex flex-col h-[calc(100vh-10rem)] md:h-[calc(100vh-120px)] bg-white dark:bg-navy-900 rounded-[2rem] md:rounded-[2.5rem] shadow-2xl border border-gold/10 overflow-hidden relative transition-all">
-      {/* Header */}
-      <div className="bg-navy-950 p-4 md:p-5 text-white flex items-center justify-between shrink-0">
+    <div className="flex flex-col h-[calc(100vh-10rem)] md:h-[calc(100vh-120px)] bg-white dark:bg-navy-900 rounded-[2.5rem] shadow-2xl border border-gold/10 overflow-hidden">
+      <div className="bg-navy-950 p-4 text-white flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 md:w-10 md:h-10 bg-gold rounded-lg flex items-center justify-center text-navy-950 shadow-lg cursor-pointer" onClick={logout}>
-            <MalikLogo className="w-5 h-5 md:w-6 md:h-6" />
+          <div className="w-10 h-10 bg-gold rounded-lg flex items-center justify-center text-navy-950" onClick={() => setUserId('')}>
+            <MalikLogo className="w-6 h-6" />
           </div>
-          <div>
-            <h3 className="font-black text-xs md:text-sm tracking-tight uppercase truncate max-w-[120px] md:max-w-none">{userId}'s Archive</h3>
-            <span className="text-[7px] text-gold font-bold uppercase tracking-widest opacity-70">Identity Confirmed</span>
-          </div>
+          <span className="font-black text-[10px] uppercase tracking-widest">{userId}'s Vault</span>
         </div>
-        <div className="flex items-center gap-2">
-           <button onClick={clearAll} className="p-2.5 bg-white/5 hover:bg-red-500/20 hover:text-red-500 rounded-lg transition-all border border-white/5" title="Clear History">
-              <TrashIcon className="w-4 h-4" />
-           </button>
-           <button 
-             onClick={startLiveVoiceSession}
-             className="p-2.5 bg-white/5 hover:bg-gold hover:text-navy-950 rounded-lg transition-all border border-white/5 flex items-center gap-2"
-           >
-             <MicIcon className="w-4 h-4" />
-             <span className="hidden sm:inline text-[9px] font-black uppercase tracking-widest">Live Voice</span>
-           </button>
-        </div>
+        <button onClick={startLiveVoiceSession} className="p-2.5 bg-white/5 hover:bg-gold hover:text-navy-950 rounded-lg transition-all border border-white/5">
+           <MicIcon className="w-4 h-4" />
+        </button>
       </div>
 
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 custom-scrollbar bg-[radial-gradient(circle_at_top_right,_rgba(212,175,55,0.02),_transparent)]">
-        {messages.map((m, i) => (
-          <div key={m.id} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'} animate-in fade-in slide-in-from-bottom-2 group`}>
-            <div className={`max-w-[92%] md:max-w-[85%] p-4 md:p-6 rounded-2xl relative shadow-sm ${
-              m.role === 'user' 
-                ? 'bg-navy-800 dark:bg-navy-800 text-white rounded-tr-none' 
-                : 'bg-slate-50 dark:bg-navy-900/80 text-slate-700 dark:text-slate-100 rounded-tl-none border border-gold/5'
-            }`}>
-              {/* Message Actions - Hidden by default, visible on hover/tap */}
-              <div className={`absolute -top-3 ${m.role === 'user' ? 'right-0' : 'left-0'} flex items-center gap-1 bg-white dark:bg-navy-800 p-1 rounded-full shadow-lg border border-gold/20 opacity-0 group-hover:opacity-100 transition-opacity z-20`}>
-                <button onClick={() => copyMessage(m.text)} className="p-1.5 hover:text-gold transition-colors"><CopyIcon className="w-3.5 h-3.5" /></button>
-                <button onClick={() => shareMessage(m.text)} className="p-1.5 hover:text-gold transition-colors"><ShareIcon className="w-3.5 h-3.5" /></button>
-                <button onClick={() => deleteMessage(m.id)} className="p-1.5 hover:text-red-500 transition-colors ml-1 border-l border-gold/10 pl-2"><TrashIcon className="w-3.5 h-3.5" /></button>
-              </div>
-
-              <div className="text-sm md:text-[15px] leading-relaxed whitespace-pre-wrap font-medium">
-                {m.text}
-              </div>
-              
-              {m.groundingUrls && m.groundingUrls.length > 0 && (
-                <div className="mt-3 pt-3 border-t border-slate-200 dark:border-white/5 flex flex-wrap gap-1.5">
-                  {m.groundingUrls.map((url, idx) => (
-                    <a key={idx} href={url.uri} target="_blank" rel="noopener noreferrer" className="text-[8px] px-1.5 py-0.5 bg-white/5 text-gold rounded border border-gold/10 hover:bg-gold hover:text-navy-950 transition-all font-bold">{url.title}</a>
-                  ))}
+      <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 custom-scrollbar">
+        {messages.map((m) => (
+          <div key={m.id} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'} animate-in fade-in`}>
+            <div className={`max-w-[90%] p-4 rounded-2xl ${m.role === 'user' ? 'bg-navy-800 text-white rounded-tr-none' : 'bg-slate-50 dark:bg-navy-900 text-slate-700 dark:text-slate-100 rounded-tl-none border border-gold/5'}`}>
+              <div className="text-xs md:text-sm leading-relaxed">{m.text}</div>
+              {m.groundingUrls && (
+                <div className="mt-2 flex flex-wrap gap-1">
+                  {m.groundingUrls.map((u, i) => <a key={i} href={u.uri} target="_blank" className="text-[8px] px-1.5 py-0.5 bg-gold/10 text-gold rounded border border-gold/20">{u.title}</a>)}
                 </div>
               )}
-              <span className="text-[6px] mt-2 block font-black uppercase tracking-widest opacity-30 text-right">
-                {m.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-              </span>
             </div>
           </div>
         ))}
-        {loading && (
-          <div className="flex justify-start">
-            <div className="bg-slate-50 dark:bg-navy-800 p-4 rounded-xl flex gap-1 items-center">
-              <div className="w-1 h-1 bg-gold rounded-full animate-bounce"></div>
-              <div className="w-1 h-1 bg-gold rounded-full animate-bounce [animation-delay:0.2s]"></div>
-              <div className="w-1 h-1 bg-gold rounded-full animate-bounce [animation-delay:0.4s]"></div>
-            </div>
-          </div>
-        )}
+        {loading && <div className="flex gap-1 p-4"><div className="w-1 h-1 bg-gold rounded-full animate-bounce"></div><div className="w-1 h-1 bg-gold rounded-full animate-bounce delay-75"></div></div>}
         <div ref={scrollRef} />
       </div>
 
-      {/* Input */}
-      <div className="p-4 md:p-5 bg-white dark:bg-navy-900 border-t border-gold/10">
-        <div className="flex flex-wrap gap-1.5 mb-3 justify-center">
-           {suggestions.map(s => (
-             <button key={s} onClick={() => handleSend(s)} className="text-[8px] font-black uppercase tracking-widest px-2.5 py-1 bg-slate-100 dark:bg-navy-800 text-slate-500 dark:text-gold rounded-full border border-transparent hover:border-gold/30 hover:text-gold transition-all">{s}</button>
-           ))}
+      <div className="p-4 bg-white dark:bg-navy-900 border-t border-gold/10">
+        <div className="flex gap-2 max-w-3xl mx-auto">
+          <input type="text" value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleSend()} placeholder="Ask the Scholar..." className="flex-1 py-3 px-5 rounded-xl bg-slate-50 dark:bg-navy-800 border-none outline-none font-bold text-xs" />
+          <button onClick={() => handleSend()} className="p-3 bg-gold text-navy-950 rounded-xl"><SparklesIcon className="w-4 h-4" /></button>
         </div>
-
-        <div className="max-w-3xl mx-auto flex items-center gap-2">
-          <input
-            type="text" value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-            placeholder="Type your Islamic query..."
-            className="flex-1 py-3 px-5 rounded-xl bg-slate-50 dark:bg-navy-800 border-none outline-none font-bold text-xs md:text-sm focus:ring-1 focus:ring-gold/30"
-          />
-          <button onClick={() => handleSend()} disabled={!input.trim() || loading} className="p-3 bg-gold text-navy-950 rounded-xl hover:scale-105 disabled:opacity-50 transition-all shadow-md">
-            <SparklesIcon className="w-4 h-4" />
-          </button>
-        </div>
-        <p className="text-center mt-3 text-[7px] font-black text-slate-400 dark:text-gold/40 uppercase tracking-[0.2em]">Safe Scholarly Sanctuary Active.</p>
       </div>
     </div>
   );
