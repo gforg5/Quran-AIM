@@ -86,7 +86,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
 
   return (
     <div className="space-y-10 pb-20 max-w-7xl mx-auto px-2">
-      {/* Hero Section */}
+      {/* Hero Section - Using Makkah Image */}
       <section className="relative h-[400px] md:h-[500px] rounded-[2rem] md:rounded-[4rem] overflow-hidden shadow-2xl border-b-4 md:border-b-8 border-gold group">
         <img 
           src="https://images.unsplash.com/photo-1564769625905-50e9ad63ef9f?q=80&w=2070&auto=format&fit=crop" 
@@ -97,7 +97,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
           <div className="p-6 md:p-20 space-y-4 md:space-y-6 max-w-4xl animate-in slide-in-from-left duration-700">
              <div className="inline-flex items-center gap-2 px-3 py-1 bg-gold/20 backdrop-blur-xl rounded-full border border-gold/40">
                 <span className="w-1.5 h-1.5 bg-gold rounded-full animate-pulse"></span>
-                <span className="text-gold text-[7px] md:text-[9px] font-black uppercase tracking-[0.3em]">ISLAMIC KNOWLEDGE</span>
+                <span className="text-gold text-[7px] md:text-[9px] font-black uppercase tracking-[0.3em]">ISLAMIC KNOWLEDGE (اسلامی معلومات)</span>
              </div>
              <h1 className="text-4xl md:text-8xl font-black text-white tracking-tighter leading-tight playfair italic">
                THE HOLY <span className="text-gradient-gold">QURAN</span>
@@ -110,13 +110,13 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
                   onClick={() => setActiveTab(AppTab.QURAN)}
                   className="px-6 md:px-10 py-3 md:py-4 bg-gold text-navy-950 font-black rounded-xl md:rounded-2xl shadow-xl hover:bg-gold-light transition-all active:scale-95 uppercase tracking-widest text-[8px] md:text-[10px]"
                 >
-                  READ QURAN
+                  READ QURAN (قرآن پڑھیں)
                 </button>
                 <button 
                   onClick={() => setActiveTab(AppTab.TOOLS)}
                   className="px-6 md:px-10 py-3 md:py-4 bg-white/10 backdrop-blur-md text-white font-black rounded-xl md:rounded-2xl hover:bg-white/20 transition-all border border-white/20 uppercase tracking-widest text-[8px] md:text-[10px]"
                 >
-                  PRAYER TIMES
+                  PRAYER TIMES (اوقات نماز)
                 </button>
              </div>
           </div>
@@ -126,7 +126,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
       {/* Prayer Times */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4">
         {times && (Object.entries(times) as [string, string][]).filter(([k]) => ['Fajr', 'Sunrise', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'].includes(k)).map(([name, time]) => (
-          <div key={name} className="glass-ui p-4 md:p-6 rounded-[1.5rem] md:rounded-[2.5rem] flex flex-col items-center hover:shadow-xl transition-all border border-gold/5 bg-white/5">
+          <div key={name} className="glass-ui p-4 md:p-6 rounded-[1.5rem] md:rounded-[2.5rem] flex flex-col items-center hover:shadow-xl transition-all border border-gold/5 bg-white/5 dark:bg-navy-900/40">
              <div className="w-10 h-10 md:w-14 md:h-14 bg-navy-900/50 rounded-xl flex items-center justify-center mb-3">
                 <span className="text-gold font-black text-xs md:text-lg">{name[0]}</span>
              </div>
@@ -142,7 +142,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
       <section className="grid lg:grid-cols-2 gap-6 md:gap-8">
         <div className="bg-emerald-950 rounded-[2rem] md:rounded-[4rem] p-8 md:p-12 text-white shadow-2xl relative overflow-hidden flex flex-col justify-center border-l-4 md:border-l-[12px] border-gold min-h-[450px]">
            <div className="relative z-10 space-y-6 text-center">
-              <span className="px-3 py-1 bg-gold/20 border border-gold/40 rounded-full text-gold text-[7px] md:text-[9px] font-black tracking-widest uppercase">Daily Verse</span>
+              <span className="px-3 py-1 bg-gold/20 border border-gold/40 rounded-full text-gold text-[7px] md:text-[9px] font-black tracking-widest uppercase">Daily Verse (آیت)</span>
               {ayah && (
                 <>
                   <p className="arabic-text text-3xl md:text-4xl leading-relaxed text-center text-gradient-gold">

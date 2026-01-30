@@ -10,27 +10,27 @@ const About: React.FC = () => {
         <h2 className="text-3xl md:text-5xl font-black text-navy-950 dark:text-white tracking-tighter uppercase italic playfair">The Mission</h2>
       </div>
 
-      <div className="glass-premium p-6 md:p-20 rounded-[2.5rem] md:rounded-[4rem] border border-gold/10 shadow-2xl space-y-8 bg-white/40 dark:bg-navy-900/40 backdrop-blur-md">
+      <div className="glass-premium p-6 md:p-16 rounded-[2.5rem] md:rounded-[4rem] border border-gold/10 shadow-2xl space-y-10 bg-white/50 dark:bg-navy-900/40 backdrop-blur-lg">
         <div className="space-y-3">
           <div className="inline-flex items-center gap-2 px-3 py-1 bg-gold/10 rounded-full border border-gold/20">
             <SparklesIcon className="w-3 h-3 text-gold" />
-            <span className="text-gold text-[8px] md:text-[10px] font-black uppercase tracking-widest">About Al-Malik</span>
+            <span className="text-gold text-[8px] md:text-[10px] font-black uppercase tracking-widest">About Al-Malik (ہمارے بارے میں)</span>
           </div>
-          <h3 className="text-xl md:text-2xl font-black text-navy-950 dark:text-emerald-50">SIMPLE & PROFESSIONAL</h3>
+          <h3 className="text-xl md:text-2xl font-black text-navy-950 dark:text-emerald-50 tracking-tighter">ISLAMIC KNOWLEDGE FOR ALL</h3>
         </div>
 
-        <p className="text-lg md:text-3xl font-medium text-slate-600 dark:text-emerald-100 leading-snug italic px-1 md:px-10">
-          We provide clear and correct knowledge of the Holy Quran and Hadith for everyone to learn easily through modern technology.
+        <p className="text-xl md:text-3xl font-medium text-slate-700 dark:text-emerald-100 leading-tight italic px-1 md:px-10">
+          "Our goal is to provide authentic Islamic knowledge easily through modern technology for everyone."
         </p>
 
-        <div className="pt-6 border-t border-gold/10 flex flex-col md:flex-row justify-center items-center gap-4 md:gap-8">
+        <div className="pt-10 border-t border-gold/10 flex flex-col md:flex-row justify-center items-center gap-4 md:gap-10">
            <div className="flex items-center gap-2">
               <div className="w-1.5 h-1.5 bg-gold rounded-full"></div>
-              <span className="text-[7px] md:text-[10px] font-black uppercase tracking-widest text-navy-950 dark:text-slate-400">AL-MALIK APP</span>
+              <span className="text-[7px] md:text-[10px] font-black uppercase tracking-widest text-navy-950 dark:text-slate-400">AUTHENTIC KNOWLEDGE</span>
            </div>
            <div className="flex items-center gap-2">
               <div className="w-1.5 h-1.5 bg-gold rounded-full"></div>
-              <span className="text-[7px] md:text-[10px] font-black uppercase tracking-widest text-navy-950 dark:text-slate-400">ISLAMIC KNOWLEDGE</span>
+              <span className="text-[7px] md:text-[10px] font-black uppercase tracking-widest text-navy-950 dark:text-slate-400">EASY TO LEARN</span>
            </div>
         </div>
       </div>

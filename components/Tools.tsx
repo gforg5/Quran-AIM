@@ -37,31 +37,31 @@ const Tools: React.FC = () => {
 
   const getLabelSimple = (key: string) => {
     switch(key) {
-      case 'cash': return 'Money in Bank or Cash';
-      case 'gold': return 'Your Gold (Value)';
-      case 'silver': return 'Your Silver (Value)';
-      case 'business': return 'Business Goods';
-      case 'investments': return 'Investments (Shares/Plots)';
-      case 'liabilities': return 'Money you owe others';
+      case 'cash': return 'Money / Cash (نقدی)';
+      case 'gold': return 'Gold Value (سونا)';
+      case 'silver': return 'Silver Value (چاندی)';
+      case 'business': return 'Business Goods (تجارت)';
+      case 'investments': return 'Investments (انویسٹمنٹ)';
+      case 'liabilities': return 'Money Owed (قرض)';
       default: return key.toUpperCase();
     }
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-12 animate-in fade-in duration-1000">
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-8 bg-white/50 dark:bg-emerald-900/30 p-10 rounded-[3.5rem] border border-gold/10">
+    <div className="max-w-6xl mx-auto space-y-12 animate-in fade-in duration-1000 px-2">
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-8 bg-white/50 dark:bg-emerald-900/30 p-8 md:p-10 rounded-[2.5rem] md:rounded-[3.5rem] border border-gold/10">
         <div>
-          <h2 className="text-5xl font-black text-emerald-950 dark:text-white tracking-tighter">Daily <span className="text-gradient-gold">Tools</span></h2>
-          <p className="text-slate-500 dark:text-emerald-400 font-bold uppercase tracking-widest text-[10px] mt-2">Simple help for your worship</p>
+          <h2 className="text-3xl md:text-5xl font-black text-emerald-950 dark:text-white tracking-tighter uppercase italic playfair">Islamic <span className="text-gradient-gold">Tools</span></h2>
+          <p className="text-slate-500 dark:text-emerald-400 font-bold uppercase tracking-widest text-[8px] md:text-[10px] mt-2">Helping you in your daily worship (عبادت)</p>
         </div>
-        <div className="flex bg-slate-100 dark:bg-emerald-950 p-2.5 rounded-[2.5rem] border border-gold/10 shadow-inner">
+        <div className="flex bg-slate-100 dark:bg-emerald-950 p-2 rounded-[2rem] border border-gold/10 shadow-inner">
           {['tasbeeh', 'qibla', 'zakat'].map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTool(tab as any)}
-              className={`px-10 py-5 rounded-[2rem] text-xs font-black uppercase tracking-widest transition-all ${
+              className={`px-6 md:px-10 py-4 md:py-5 rounded-[1.5rem] text-[9px] md:text-xs font-black uppercase tracking-widest transition-all ${
                 activeTool === tab 
-                  ? 'bg-gold text-emerald-950 shadow-2xl scale-105' 
+                  ? 'bg-gold text-emerald-950 shadow-2xl' 
                   : 'text-slate-400 dark:text-emerald-500/50 hover:text-gold'
               }`}
             >
@@ -73,36 +73,36 @@ const Tools: React.FC = () => {
 
       {activeTool === 'tasbeeh' && (
         <div className="grid md:grid-cols-2 gap-12 items-center">
-           <div className="glass-premium rounded-[5rem] p-16 flex flex-col items-center text-center relative overflow-hidden group border-2 border-gold/20 shadow-2xl">
+           <div className="glass-premium rounded-[3rem] md:rounded-[5rem] p-8 md:p-16 flex flex-col items-center text-center relative overflow-hidden group border-2 border-gold/20 shadow-2xl bg-white/5 dark:bg-navy-900/20">
               <div className="absolute top-0 left-0 w-full h-3 bg-slate-100 dark:bg-emerald-900">
                  <div className="h-full bg-gold transition-all duration-700 shadow-[0_0_20px_#d4af37]" style={{ width: `${Math.min(100, (tasbih / goal) * 100)}%` }}></div>
               </div>
               
-              <div className="relative w-80 h-80 flex items-center justify-center cursor-pointer active:scale-90 transition-all group" onClick={() => setTasbih(tasbih + 1)}>
-                <div className="absolute inset-0 rounded-full border-[25px] border-slate-50 dark:border-white/5 shadow-[inset_0_4px_12px_rgba(0,0,0,0.1)] transition-all group-active:border-gold/10"></div>
-                <div className="absolute inset-0 rounded-full border-4 border-dashed border-gold/20"></div>
+              <div className="relative w-64 h-64 md:w-80 md:h-80 flex items-center justify-center cursor-pointer active:scale-95 transition-all group" onClick={() => setTasbih(tasbih + 1)}>
+                <div className="absolute inset-0 rounded-full border-[15px] md:border-[25px] border-slate-50 dark:border-white/5 shadow-[inset_0_4px_12px_rgba(0,0,0,0.1)] transition-all group-active:border-gold/10"></div>
+                <div className="absolute inset-0 rounded-full border-2 md:border-4 border-dashed border-gold/20"></div>
                 <div className="flex flex-col items-center">
-                   <span className="text-9xl font-black text-emerald-950 dark:text-white tabular-nums tracking-tighter drop-shadow-2xl">{tasbih}</span>
-                   <span className="text-[10px] font-black text-gold mt-4 tracking-[0.4em]">REMEMBER ALLAH</span>
+                   <span className="text-7xl md:text-9xl font-black text-emerald-950 dark:text-white tabular-nums tracking-tighter drop-shadow-2xl">{tasbih}</span>
+                   <span className="text-[10px] font-black text-gold mt-4 tracking-[0.4em]">Subhan Allah</span>
                 </div>
               </div>
 
-              <div className="mt-16 flex gap-6 w-full max-w-md">
-                 <button onClick={() => setTasbih(0)} className="flex-1 py-6 bg-slate-100 dark:bg-white/5 text-slate-400 dark:text-emerald-500 font-black rounded-3xl hover:bg-red-50 hover:text-red-500 transition-all uppercase tracking-widest text-xs">Reset Count</button>
-                 <button onClick={() => setGoal(goal === 33 ? 99 : 33)} className="flex-1 py-6 bg-emerald-950 text-gold font-black rounded-3xl border border-gold/20 hover:bg-gold hover:text-emerald-950 transition-all uppercase tracking-widest text-xs">Target: {goal}</button>
+              <div className="mt-12 md:mt-16 flex gap-4 md:gap-6 w-full max-w-md">
+                 <button onClick={() => setTasbih(0)} className="flex-1 py-4 md:py-6 bg-slate-100 dark:bg-white/5 text-slate-400 dark:text-emerald-500 font-black rounded-2xl md:rounded-3xl hover:bg-red-50 hover:text-red-500 transition-all uppercase tracking-widest text-[9px] md:text-xs">Reset (صفر)</button>
+                 <button onClick={() => setGoal(goal === 33 ? 99 : 33)} className="flex-1 py-4 md:py-6 bg-emerald-950 text-gold font-black rounded-2xl md:rounded-3xl border border-gold/20 hover:bg-gold hover:text-emerald-950 transition-all uppercase tracking-widest text-[9px] md:text-xs">Target: {goal}</button>
               </div>
            </div>
 
-           <div className="space-y-10 p-6">
-              <h3 className="text-5xl font-black text-emerald-950 dark:text-white leading-[1.1] playfair italic">Easy <br/><span className="text-gradient-gold">Dhikr Counter</span></h3>
-              <p className="text-slate-500 dark:text-emerald-200/70 text-xl leading-relaxed">
-                A simple way to keep track of your daily Dhikr. Tap the circle to count your praises to Allah.
+           <div className="space-y-10 p-4">
+              <h3 className="text-4xl md:text-5xl font-black text-emerald-950 dark:text-white leading-[1.1] playfair italic">Easy <br/><span className="text-gradient-gold">Dhikr Counter</span></h3>
+              <p className="text-slate-500 dark:text-emerald-200/70 text-lg md:text-xl leading-relaxed">
+                Simple Dhikr counter for your daily remembrance of Allah. (اللہ کا ذکر)
               </p>
-              <div className="grid gap-4">
+              <div className="grid gap-3">
                  {['Subhan Allah (33x)', 'Alhamdulillah (33x)', 'Allahu Akbar (34x)'].map((p, i) => (
-                   <div key={i} className="flex items-center gap-6 p-8 bg-white dark:bg-emerald-950/50 rounded-[2.5rem] border border-gold/5 shadow-xl hover:border-gold/30 transition-all">
-                      <div className="w-12 h-12 rounded-2xl bg-gold/10 flex items-center justify-center text-gold font-black text-xl italic">{i+1}</div>
-                      <span className="font-bold text-emerald-950 dark:text-emerald-50 text-lg">{p}</span>
+                   <div key={i} className="flex items-center gap-6 p-6 md:p-8 bg-white dark:bg-navy-900 border border-gold/5 rounded-[2rem] shadow-xl hover:border-gold/30 transition-all">
+                      <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gold/10 flex items-center justify-center text-gold font-black text-lg italic">{i+1}</div>
+                      <span className="font-bold text-emerald-950 dark:text-emerald-50 text-base md:text-lg">{p}</span>
                    </div>
                  ))}
               </div>
@@ -111,93 +111,87 @@ const Tools: React.FC = () => {
       )}
 
       {activeTool === 'qibla' && (
-        <div className="flex flex-col items-center justify-center min-h-[70vh] space-y-16 animate-in zoom-in duration-700">
-           <div className="w-[300px] h-[300px] md:w-[500px] md:h-[500px] relative flex items-center justify-center group shadow-[0_50px_100px_-20px_rgba(0,0,0,0.4)] rounded-full">
-              <div className="absolute inset-0 rounded-full border-[10px] md:border-[20px] border-emerald-950 dark:border-black shadow-inner"></div>
-              <div className="absolute inset-5 md:inset-10 rounded-full border-2 md:border-4 border-gold/10"></div>
+        <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-12 animate-in zoom-in duration-700">
+           <div className="w-[280px] h-[280px] md:w-[450px] md:h-[450px] relative flex items-center justify-center group shadow-[0_40px_80px_-20px_rgba(0,0,0,0.5)] rounded-full bg-white dark:bg-navy-950">
+              <div className="absolute inset-0 rounded-full border-[8px] md:border-[15px] border-emerald-950 dark:border-black shadow-inner"></div>
+              <div className="absolute inset-4 md:inset-8 rounded-full border-2 border-gold/10"></div>
               
               <div className="absolute inset-0 flex items-center justify-center transition-transform duration-1000 ease-out" style={{ transform: `rotate(${-heading + qiblaAngle}deg)` }}>
-                 <div className="absolute top-4 md:top-10 flex flex-col items-center">
-                    <div className="w-1.5 md:w-2.5 h-32 md:h-48 bg-gradient-to-t from-gold to-gold-light rounded-full shadow-[0_0_40px_rgba(212,175,55,1)]"></div>
+                 <div className="absolute top-6 md:top-10 flex flex-col items-center">
+                    <div className="w-1 md:w-2 h-24 md:h-40 bg-gradient-to-t from-gold to-gold-light rounded-full shadow-[0_0_30px_rgba(212,175,55,1)]"></div>
                  </div>
               </div>
 
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                 <MalikLogo className="w-12 h-12 md:w-20 md:h-20 text-gold animate-sacred-glow drop-shadow-2xl" />
-              </div>
-
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-20">
-                 <span className="absolute top-16 font-black text-gold text-[10px] md:text-sm tracking-[1em]">NORTH</span>
-                 <span className="absolute bottom-16 font-black text-slate-400 text-[10px] md:text-sm tracking-[1em]">SOUTH</span>
+                 <MalikLogo className="w-10 h-10 md:w-16 md:h-16 text-gold animate-sacred-glow" />
               </div>
            </div>
            
-           <div className="max-w-2xl text-center space-y-6">
+           <div className="max-w-2xl text-center space-y-4">
               <h2 className="text-3xl md:text-5xl font-black text-emerald-950 dark:text-white tracking-tighter">Find <span className="text-gradient-gold">Qibla</span> Direction</h2>
-              <p className="text-slate-500 dark:text-emerald-400 font-bold text-sm md:text-lg italic">
-                A simple compass to find the direction of the Holy Kaaba.
+              <p className="text-slate-500 dark:text-emerald-400 font-bold text-sm md:text-lg italic uppercase tracking-widest">
+                Direction of the Kaaba (قبلہ کا رخ)
               </p>
            </div>
         </div>
       )}
 
       {activeTool === 'zakat' && (
-        <div className="grid lg:grid-cols-2 gap-20 animate-in slide-in-from-bottom duration-700">
-           <div className="glass-premium rounded-[5rem] p-16 shadow-[0_40px_80px_-20px_rgba(0,0,0,0.3)] border-2 border-gold/20">
-              <div className="flex items-center gap-6 mb-16">
-                 <div className="w-20 h-20 bg-emerald-950 rounded-3xl flex items-center justify-center shadow-2xl border-2 border-gold/20">
-                    <CharityIcon className="w-10 h-10 text-gold" />
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 animate-in slide-in-from-bottom duration-700">
+           <div className="glass-premium rounded-[3rem] md:rounded-[5rem] p-8 md:p-16 shadow-2xl border-2 border-gold/20 bg-white dark:bg-navy-900/40">
+              <div className="flex items-center gap-6 mb-12">
+                 <div className="w-16 h-16 md:w-20 md:h-20 bg-emerald-950 rounded-2xl flex items-center justify-center shadow-2xl border border-gold/20">
+                    <CharityIcon className="w-8 h-8 md:w-10 md:h-10 text-gold" />
                  </div>
-                 <h3 className="text-4xl font-black text-emerald-950 dark:text-white playfair italic">Calculate Charity <br/><span className="text-gold font-sans not-italic text-2xl uppercase tracking-widest">(Zakat)</span></h3>
+                 <h3 className="text-3xl md:text-4xl font-black text-emerald-950 dark:text-white playfair italic">Calculate Charity <br/><span className="text-gold font-sans not-italic text-lg md:text-xl uppercase tracking-widest">(زکوٰۃ کیلکولیٹر)</span></h3>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
                  {Object.keys(zakatAssets).map((key) => (
-                    <div key={key} className="space-y-3">
-                       <label className="text-[10px] font-black text-slate-400 dark:text-emerald-500 uppercase tracking-widest ml-3">
+                    <div key={key} className="space-y-2">
+                       <label className="text-[9px] font-black text-slate-400 dark:text-gold uppercase tracking-widest ml-2">
                          {getLabelSimple(key)}
                        </label>
                        <input 
                          type="number"
                          value={zakatAssets[key as keyof typeof zakatAssets]}
                          onChange={(e) => setZakatAssets({...zakatAssets, [key]: parseFloat(e.target.value) || 0})}
-                         className="w-full bg-slate-50 dark:bg-royal-dark border-none rounded-3xl py-6 px-10 text-emerald-950 dark:text-white font-black text-xl focus:ring-4 focus:ring-gold/20 outline-none transition-all shadow-inner"
+                         className="w-full bg-slate-50 dark:bg-navy-800 border-none rounded-2xl md:rounded-3xl py-4 md:py-6 px-6 md:px-10 text-emerald-950 dark:text-white font-black text-xl focus:ring-4 focus:ring-gold/20 outline-none transition-all shadow-inner"
                        />
                     </div>
                  ))}
               </div>
 
               {showZakatResult ? (
-                 <div className="mt-16 p-12 bg-emerald-950 text-white rounded-[4rem] border-4 border-gold shadow-[0_30px_60px_rgba(212,175,55,0.3)] animate-in zoom-in-95 text-center">
-                    <span className="text-[10px] font-black text-gold uppercase tracking-[0.5em] mb-4 block">Charity to Give</span>
-                    <p className="text-7xl font-black mb-10 tracking-tighter text-gradient-gold">${calculateZakat()}</p>
-                    <button onClick={() => setShowZakatResult(false)} className="px-10 py-5 bg-gold text-emerald-950 font-black rounded-2xl uppercase tracking-widest text-xs hover:bg-white transition-all shadow-xl">Start Over</button>
+                 <div className="mt-12 p-10 bg-emerald-950 text-white rounded-[3rem] border-4 border-gold shadow-2xl animate-in zoom-in-95 text-center">
+                    <span className="text-[10px] font-black text-gold uppercase tracking-[0.4em] mb-4 block">Total Charity to Give</span>
+                    <p className="text-5xl md:text-7xl font-black mb-10 tracking-tighter text-gradient-gold">${calculateZakat()}</p>
+                    <button onClick={() => setShowZakatResult(false)} className="px-10 py-5 bg-gold text-emerald-950 font-black rounded-xl uppercase tracking-widest text-[10px] shadow-xl">Start Over</button>
                  </div>
               ) : (
-                 <button onClick={() => setShowZakatResult(true)} className="w-full mt-16 py-8 bg-emerald-950 dark:bg-gold text-white dark:text-emerald-950 font-black rounded-[3rem] shadow-2xl hover:scale-[1.03] active:scale-95 transition-all uppercase tracking-widest text-sm border-2 border-gold/30">
+                 <button onClick={() => setShowZakatResult(true)} className="w-full mt-12 py-6 md:py-8 bg-emerald-950 dark:bg-gold text-white dark:text-emerald-950 font-black rounded-[2rem] md:rounded-[3rem] shadow-2xl hover:scale-[1.03] transition-all uppercase tracking-widest text-xs border border-gold/30">
                    Calculate Now
                  </button>
               )}
            </div>
 
-           <div className="py-12 space-y-16">
-              <div className="space-y-8">
-                 <h4 className="text-6xl font-black text-emerald-950 dark:text-white tracking-tighter leading-none italic playfair">Give <br/><span className="text-gradient-gold">Charity Simply</span></h4>
-                 <p className="text-slate-500 dark:text-emerald-200/60 text-xl leading-relaxed font-medium">
-                   Zakat is a simple way to share with the poor. Use this tool to see how much you should give.
+           <div className="py-8 space-y-12">
+              <div className="space-y-6">
+                 <h4 className="text-5xl md:text-6xl font-black text-emerald-950 dark:text-white tracking-tighter leading-none italic playfair">Give <br/><span className="text-gradient-gold">Charity Simply</span></h4>
+                 <p className="text-slate-500 dark:text-emerald-200/60 text-lg md:text-xl leading-relaxed font-medium">
+                   Zakat is one of the pillars of Islam. Use this simple tool to see your share for the needy.
                  </p>
               </div>
-              <div className="grid gap-8">
+              <div className="grid gap-6">
                  {[
-                   { title: "2.5% Share", detail: "Share a small part of what you saved.", icon: "⚖️" },
-                   { title: "Yearly Count", detail: "Count what you saved for one full year.", icon: "🌙" },
+                   { title: "2.5% Share", detail: "Small part of your annual savings.", icon: "⚖️" },
                    { title: "Helping Others", detail: "Your charity helps those who have less.", icon: "🤝" }
                  ].map((card, i) => (
-                   <div key={i} className="flex items-center gap-8 p-10 bg-white dark:bg-emerald-950/40 rounded-[3.5rem] border border-gold/10 shadow-lg hover:shadow-2xl transition-all group">
-                      <span className="text-5xl group-hover:scale-125 transition-transform">{card.icon}</span>
+                   <div key={i} className="flex items-center gap-6 p-8 bg-white dark:bg-navy-900 rounded-[2.5rem] border border-gold/10 shadow-lg transition-all group">
+                      <span className="text-4xl group-hover:scale-110 transition-transform">{card.icon}</span>
                       <div>
-                         <p className="text-gold font-black uppercase tracking-widest text-[10px] mb-2">{card.title}</p>
-                         <p className="text-xl font-black text-emerald-950 dark:text-white tracking-tight leading-snug">{card.detail}</p>
+                         <p className="text-gold font-black uppercase tracking-widest text-[9px] mb-1">{card.title}</p>
+                         <p className="text-lg font-black text-emerald-950 dark:text-white tracking-tight leading-snug">{card.detail}</p>
                       </div>
                    </div>
                  ))}

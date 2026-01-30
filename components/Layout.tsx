@@ -82,7 +82,7 @@ const Layout: React.FC<LayoutProps> = ({ activeTab, setActiveTab, goHome, childr
              <div className="w-1 h-1 bg-slate-300 dark:bg-slate-700 rounded-full"></div>
              <h1 className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 truncate">
               {activeTab === AppTab.QURAN ? 'Holy Quran' : 
-               activeTab === AppTab.HADITH ? 'Prophetic Vault' :
+               activeTab === AppTab.HADITH ? 'Hadith (حدیث)' :
                activeTab === AppTab.DEVELOPER ? 'SMA' : 
                activeTab === AppTab.QURAN_AI ? 'AI Assistant' : 'Wisdom'}
              </h1>

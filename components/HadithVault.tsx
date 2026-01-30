@@ -13,6 +13,7 @@ const HadithVault: React.FC = () => {
   const [bookmarkedHadiths, setBookmarkedHadiths] = useState<string[]>([]);
   const [activeCollection, setActiveCollection] = useState('All');
   const audioContextRef = useRef<AudioContext | null>(null);
+  const activeSourceRef = useRef<AudioBufferSourceNode | null>(null);
 
   const collections = ["All", "Sahih Bukhari", "Sahih Muslim", "Sunan Abi Dawud"];
 
@@ -23,7 +24,8 @@ const HadithVault: React.FC = () => {
       hadithNumber: '1',
       narrator: 'Umar bin al-Khattab',
       hadithArabic: 'إِنَّمَا الأَعْمَالُ بِالنِّيَّاتِ، وَإِنَّمَا لِكُلِّ امْرِئٍ مَا نَوَى...',
-      hadithEnglish: 'Actions are but by intentions and every man shall have only that which he intended...',
+      hadithEnglish: 'Actions are but by intentions and every man shall have only that which he intended.',
+      urduText: 'اعمال کا دارومدار نیتوں پر ہے اور ہر انسان کے لیے وہی ہے جس کی اس نے نیت کی۔',
       text: 'Actions are but by intentions...',
       source: 'Sahih Bukhari'
     },
@@ -33,7 +35,8 @@ const HadithVault: React.FC = () => {
       hadithNumber: '8',
       narrator: 'Abdullah bin Umar',
       hadithArabic: 'بُنِيَ الإِسْلاَمُ عَلَى خَمْسٍ...',
-      hadithEnglish: 'Islam is built upon five pillars: Testifying that there is no god but Allah and that Muhammad is the Messenger of Allah, performing prayers, paying Zakat, making Hajj to the House, and fasting in Ramadan.',
+      hadithEnglish: 'Islam is built upon five pillars: Testifying that there is no god but Allah, performing prayers, paying Zakat, Hajj, and fasting.',
+      urduText: 'اسلام کی بنیاد پانچ چیزوں پر رکھی گئی ہے: اللہ کی توحید کی گواہی، نماز قائم کرنا، زکوٰۃ دینا، حج کرنا اور رمضان کے روزے رکھنا۔',
       text: 'Islam is built upon five...',
       source: 'Sahih Muslim'
     },
@@ -43,7 +46,8 @@ const HadithVault: React.FC = () => {
       hadithNumber: '2',
       narrator: 'Aisha (RA)',
       hadithArabic: 'أَنَّ الْحَارِثَ بْنَ هِشَامٍ ـ رضى الله عنه ـ سَأَلَ رَسُولَ اللَّهِ صلى الله عليه وسلم فَقَالَ يَا رَسُولَ اللَّهِ كَيْفَ يَأْتِيكَ الْوَحْىُ...',
-      hadithEnglish: 'Al-Harith bin Hisham asked the Messenger of Allah, "How does the Divine Inspiration come to you?" The Prophet replied, "Sometimes it comes like the ringing of a bell, and this is the hardest for me..."',
+      hadithEnglish: 'The Prophet said, "Sometimes it comes like the ringing of a bell, and this is the hardest for me..."',
+      urduText: 'آپ صلی اللہ علیہ وسلم نے فرمایا: کبھی یہ (وحی) میرے پاس گھنٹی کی آواز کی طرح آتی ہے اور یہ مجھ پر سب سے زیادہ سخت ہوتی ہے۔',
       text: 'The beginning of Revelation...',
       source: 'Sahih Bukhari'
     },
@@ -54,6 +58,7 @@ const HadithVault: React.FC = () => {
       narrator: 'Abu Hurairah',
       hadithArabic: 'الْمَرْءُ عَلَى دِينِ خَلِيلِهِ فَلْيَنْظُرْ أَحَدُكُمْ مَنْ يُخَالِلُ',
       hadithEnglish: 'A man follows the religion of his friend; so each one of you should consider whom he makes his friend.',
+      urduText: 'آدمی اپنے دوست کے دین پر ہوتا ہے، اس لیے تم میں سے ہر شخص کو دیکھنا چاہیے کہ وہ کس سے دوستی کر رہا ہے۔',
       text: 'Importance of good company.',
       source: 'Sunan Abi Dawud'
     }
@@ -63,11 +68,16 @@ const HadithVault: React.FC = () => {
     const saved = localStorage.getItem('almalik_hadith_bookmarks');
     if (saved) setBookmarkedHadiths(JSON.parse(saved));
     
-    // Simulate API fetch delay
     setTimeout(() => {
       setHadiths(initialHadiths);
       setLoading(false);
     }, 600);
+
+    return () => {
+      if (activeSourceRef.current) {
+        try { activeSourceRef.current.stop(); } catch(e) {}
+      }
+    };
   }, []);
 
   const toggleBookmark = (id: string, e?: React.MouseEvent) => {
@@ -84,7 +94,22 @@ const HadithVault: React.FC = () => {
 
   const handleVoiceInsight = async (h: Hadith, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
-    if (isSpeaking === h.id) return;
+    
+    // STOP LOGIC: If same is clicked, stop and reset
+    if (isSpeaking === h.id) {
+      if (activeSourceRef.current) {
+        try { activeSourceRef.current.stop(); } catch(e) {}
+        activeSourceRef.current = null;
+      }
+      setIsSpeaking(null);
+      return;
+    }
+
+    // Stop current source if any
+    if (activeSourceRef.current) {
+      try { activeSourceRef.current.stop(); } catch(e) {}
+    }
+
     setIsSpeaking(h.id);
     
     try {
@@ -94,14 +119,19 @@ const HadithVault: React.FC = () => {
       const ctx = audioContextRef.current;
       if (ctx.state === 'suspended') await ctx.resume();
       
-      const base64 = await speakGuidance(`Narrated by ${h.narrator}: ${h.hadithEnglish || h.text}. Source: ${h.collection}.`);
+      const base64 = await speakGuidance(`Narrated by ${h.narrator}: ${h.hadithEnglish || h.text}.`);
       const audioBytes = decodeAudio(base64);
       const audioBuffer = await decodeAudioData(audioBytes, ctx, 24000, 1);
       
       const source = ctx.createBufferSource();
       source.buffer = audioBuffer;
       source.connect(ctx.destination);
-      source.onended = () => setIsSpeaking(null);
+      source.onended = () => {
+        if (activeSourceRef.current === source) {
+          setIsSpeaking(null);
+        }
+      };
+      activeSourceRef.current = source;
       source.start();
     } catch (err) {
       console.error(err);
@@ -121,7 +151,7 @@ const HadithVault: React.FC = () => {
     return (
       <div className="flex flex-col items-center justify-center h-[50vh] gap-6 opacity-30">
         <BayanLogo className="w-16 h-16 animate-pulse text-gold" />
-        <p className="text-[10px] font-black uppercase tracking-[0.5em] text-slate-500">Retrieving Traditions...</p>
+        <p className="text-[10px] font-black uppercase tracking-[0.5em] text-slate-500">Connecting...</p>
       </div>
     );
   }
@@ -132,13 +162,13 @@ const HadithVault: React.FC = () => {
         <>
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-8 border-b border-slate-200 dark:border-slate-800">
             <div className="space-y-3">
-              <h2 className="text-4xl md:text-6xl font-black tracking-tighter text-slate-900 dark:text-white playfair italic">PROPHETIC VAULT</h2>
-              <p className="text-slate-500 dark:text-slate-400 text-xs md:text-base font-bold uppercase tracking-widest">Explore authenticated traditions and wisdom</p>
+              <h2 className="text-4xl md:text-6xl font-black tracking-tighter text-slate-900 dark:text-white playfair italic">Hadith (حدیث)</h2>
+              <p className="text-slate-500 dark:text-slate-400 text-xs md:text-base font-bold uppercase tracking-widest">Words and Actions of Prophet Muhammad (PBUH)</p>
             </div>
             <div className="relative w-full md:w-96 group">
               <input 
                 type="text" 
-                placeholder="Search Hadith, Narrator, No..."
+                placeholder="Search Hadith"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="w-full bg-white dark:bg-navy-900 border-2 border-slate-100 dark:border-slate-800 rounded-full py-4 pl-12 pr-6 text-sm font-bold focus:border-gold outline-none transition-all shadow-sm"
@@ -164,7 +194,7 @@ const HadithVault: React.FC = () => {
               <div 
                 key={h.id} 
                 onClick={() => setSelectedHadith(h)}
-                className="group glass-ui bg-white dark:bg-navy-900 p-8 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 hover:border-gold/30 transition-all cursor-pointer hover:shadow-2xl relative overflow-hidden"
+                className="group glass-ui bg-white dark:bg-navy-900 p-8 rounded-[2rem] md:rounded-[2.5rem] border border-slate-100 dark:border-slate-800 hover:border-gold/30 transition-all cursor-pointer hover:shadow-2xl relative overflow-hidden"
               >
                 <div className="flex flex-col md:flex-row justify-between gap-6">
                   <div className="space-y-6 flex-1">
@@ -182,9 +212,16 @@ const HadithVault: React.FC = () => {
                         </svg>
                       </button>
                     </div>
-                    <p className="text-lg md:text-2xl font-black text-slate-800 dark:text-slate-100 leading-relaxed italic line-clamp-3">
-                      "{h.hadithEnglish || h.text}"
-                    </p>
+                    <div className="space-y-4">
+                      <p className="text-lg md:text-2xl font-black text-slate-800 dark:text-slate-100 leading-relaxed italic line-clamp-3">
+                        "{h.hadithEnglish || h.text}"
+                      </p>
+                      {h.urduText && (
+                        <p className="arabic-text text-xl md:text-2xl text-emerald-700 dark:text-emerald-400 font-bold leading-relaxed line-clamp-2">
+                          {h.urduText}
+                        </p>
+                      )}
+                    </div>
                     <div className="pt-4 border-t border-slate-50 dark:border-slate-800/30">
                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Narrated by {h.narrator}</p>
                     </div>
@@ -193,17 +230,9 @@ const HadithVault: React.FC = () => {
                   <div className="flex md:flex-col justify-end items-center gap-4">
                      <button 
                        onClick={(e) => handleVoiceInsight(h, e)}
-                       className={`p-5 rounded-2xl transition-all shadow-lg ${isSpeaking === h.id ? 'bg-gold text-white scale-110' : 'bg-slate-50 dark:bg-navy-800 text-slate-400 dark:text-slate-500 hover:text-gold'}`}
+                       className={`p-5 rounded-2xl transition-all shadow-lg ${isSpeaking === h.id ? 'bg-gold text-white scale-110 animate-pulse' : 'bg-slate-50 dark:bg-navy-800 text-slate-400 dark:text-slate-500 hover:text-gold'}`}
                      >
-                       {isSpeaking === h.id ? (
-                          <div className="flex gap-1 items-end h-5">
-                            <div className="w-1 h-2 bg-white animate-pulse"></div>
-                            <div className="w-1 h-4 bg-white animate-pulse delay-75"></div>
-                            <div className="w-1 h-3 bg-white animate-pulse delay-150"></div>
-                          </div>
-                       ) : (
-                          <SpeakerIcon className="w-5 h-5" />
-                       )}
+                        <SpeakerIcon className="w-5 h-5" />
                      </button>
                   </div>
                 </div>
@@ -215,30 +244,35 @@ const HadithVault: React.FC = () => {
         <div className="space-y-10 animate-in slide-in-from-right">
            <div className="flex items-center gap-4 pb-8 border-b border-slate-200 dark:border-slate-800">
               <button 
-                onClick={() => setSelectedHadith(null)}
+                onClick={() => { setSelectedHadith(null); if(activeSourceRef.current) activeSourceRef.current.stop(); setIsSpeaking(null); }}
                 className="p-3 bg-slate-50 dark:bg-navy-900 hover:bg-gold hover:text-white rounded-2xl border border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 transition-all shadow-sm"
               >
                 <ArrowLeftIcon className="w-5 h-5" />
               </button>
               <div>
-                <h3 className="text-xl md:text-3xl font-black tracking-tight text-slate-900 dark:text-white playfair italic">Detailed Insight</h3>
+                <h3 className="text-xl md:text-3xl font-black tracking-tight text-slate-900 dark:text-white playfair italic">Hadith Details</h3>
                 <span className="text-[8px] font-black text-gold uppercase tracking-[0.4em]">{selectedHadith.collection} • #{selectedHadith.hadithNumber}</span>
               </div>
            </div>
 
-           <div className="glass-ui rounded-[3rem] p-8 md:p-16 border border-slate-100 dark:border-slate-800 bg-white dark:bg-navy-900 shadow-2xl space-y-12">
+           <div className="glass-ui rounded-[2.5rem] md:rounded-[3rem] p-8 md:p-16 border border-slate-100 dark:border-slate-800 bg-white dark:bg-navy-900 shadow-2xl space-y-12">
                <div className="space-y-4">
-                  <span className="text-[8px] font-black text-gold uppercase tracking-widest block text-center opacity-40">ARABIC TEXT</span>
+                  <span className="text-[8px] font-black text-gold uppercase tracking-widest block text-center opacity-40">ARABIC</span>
                   <p className="arabic-text text-2xl md:text-5xl text-slate-800 dark:text-white leading-relaxed text-right">
                     {selectedHadith.hadithArabic}
                   </p>
                </div>
 
                <div className="pt-10 border-t border-slate-50 dark:border-slate-800/50 space-y-8">
-                 <div className="p-8 md:p-10 bg-slate-50/50 dark:bg-navy-800/30 rounded-[2rem] border-l-8 border-gold italic shadow-inner">
+                 <div className="p-8 md:p-10 bg-slate-50/50 dark:bg-navy-800/30 rounded-[2rem] border-l-8 border-gold italic shadow-inner space-y-6">
                    <p className="text-lg md:text-3xl text-slate-700 dark:text-slate-300 font-medium leading-relaxed">
                      "{selectedHadith.hadithEnglish || selectedHadith.text}"
                    </p>
+                   {selectedHadith.urduText && (
+                     <p className="arabic-text text-2xl md:text-4xl text-emerald-700 dark:text-emerald-400 font-bold leading-relaxed">
+                       {selectedHadith.urduText}
+                     </p>
+                   )}
                  </div>
                  
                  <div className="flex flex-col md:flex-row justify-between items-center gap-8">
@@ -248,10 +282,10 @@ const HadithVault: React.FC = () => {
                     </div>
                     <button 
                       onClick={() => handleVoiceInsight(selectedHadith)}
-                      className={`w-full md:w-auto px-10 py-5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-xl flex items-center justify-center gap-4 border ${isSpeaking === selectedHadith.id ? 'bg-gold text-white border-gold' : 'bg-navy-950 dark:bg-gold text-white dark:text-navy-950 border-transparent'}`}
+                      className={`w-full md:w-auto px-10 py-5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-xl flex items-center justify-center gap-4 border ${isSpeaking === selectedHadith.id ? 'bg-gold text-white border-gold animate-pulse' : 'bg-navy-950 dark:bg-gold text-white dark:text-navy-950 border-transparent'}`}
                     >
                       <SpeakerIcon className="w-5 h-5" />
-                      {isSpeaking === selectedHadith.id ? 'STREAMING...' : 'READ ALOUD'}
+                      {isSpeaking === selectedHadith.id ? 'STOP PLAYING' : 'READ ALOUD'}
                     </button>
                  </div>
                </div>
