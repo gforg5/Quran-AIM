@@ -17,6 +17,13 @@ export interface Ayah {
   surah?: Surah;
 }
 
+export interface Bookmark {
+  surahNumber: number;
+  surahName: string;
+  ayahNumber: number;
+  timestamp: number;
+}
+
 export interface Hadith {
   id: string;
   collection?: string;

@@ -29,7 +29,6 @@ const Dashboard: React.FC = () => {
         const randomAyahNum = Math.floor(Math.random() * 6236) + 1;
         const aRes = await fetch(`https://api.alquran.cloud/v1/ayah/${randomAyahNum}/editions/quran-uthmani,en.sahih`);
         const aData = await aRes.json();
-        // Added required 'number' property to match Ayah interface
         setAyah({
           number: aData.data[0].number,
           text: aData.data[0].text,
@@ -38,7 +37,6 @@ const Dashboard: React.FC = () => {
           surah: aData.data[0].surah
         });
 
-        // Added required 'id' property to match Hadith interface
         setHadith({
           id: '1',
           text: "Actions are but by intentions, and every man shall have only that which he intended.",
@@ -63,7 +61,7 @@ const Dashboard: React.FC = () => {
           <div className="w-16 h-16 border-2 border-gold/20 rounded-full animate-ping"></div>
         </div>
       </div>
-      <p className="text-gold font-black uppercase tracking-[0.5em] text-xs animate-pulse">Connecting to Hub...</p>
+      <p className="text-gold font-black uppercase tracking-[0.5em] text-xs animate-pulse">Connecting...</p>
     </div>
   );
 
@@ -79,13 +77,13 @@ const Dashboard: React.FC = () => {
           <div className="p-12 md:p-24 space-y-8 max-w-4xl animate-in slide-in-from-left duration-1000">
              <div className="inline-flex items-center gap-3 px-6 py-2.5 bg-gold/20 backdrop-blur-xl rounded-full border border-gold/40 shadow-xl">
                 <span className="w-2.5 h-2.5 bg-gold rounded-full animate-pulse"></span>
-                <span className="text-gold text-[10px] font-black uppercase tracking-[0.3em]">Islamic Wisdom Mode</span>
+                <span className="text-gold text-[10px] font-black uppercase tracking-[0.3em]">Islamic Wisdom</span>
              </div>
              <h1 className="text-6xl md:text-8xl font-black text-white tracking-tighter leading-none playfair italic">
-               Discover the <span className="text-gradient-gold">Beauty</span> of Islam.
+               The Holy <span className="text-gradient-gold">Quran</span>
              </h1>
              <p className="text-emerald-50/70 text-lg md:text-2xl font-medium max-w-3xl leading-relaxed">
-               Welcome to your digital sanctuary. Learn the truth and find peace in every word.
+               Read and listen to the 114 surahs and find guidance in every verse.
              </p>
              <div className="flex gap-6 pt-4">
                 <button className="px-10 py-5 bg-gold text-emerald-950 font-black rounded-2xl shadow-2xl hover:bg-gold-light transition-all active:scale-95 uppercase tracking-widest text-xs">Read Quran</button>
