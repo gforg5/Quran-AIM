@@ -12,7 +12,7 @@ const Developer: React.FC = () => {
           </div>
           <div className="relative z-10 w-28 h-28 md:w-40 md:h-40 rounded-full flex items-center justify-center border-2 md:border-4 border-gold shadow-2xl overflow-hidden bg-navy-900">
             <img 
-              src="https://avatars.githubusercontent.com/u/113275790?v=4" 
+              src="https://github.com/gforg5/Nano-Lens/blob/main/WhatsApp%20Image%202026-01-30%20at%208.34.10%20PM.jpeg?raw=true" 
               alt="Sayed Mohsin Ali" 
               className="w-full h-full object-cover"
             />
@@ -21,7 +21,6 @@ const Developer: React.FC = () => {
         
         <div className="p-6 md:p-12 text-center space-y-6">
           <div className="space-y-2">
-            {/* Using flex and whitespace-nowrap to keep name together on mobile if possible, otherwise scale it */}
             <h2 className="text-xl md:text-4xl font-black text-navy-950 dark:text-white tracking-tighter uppercase inline-block">
               SAYED MOHSIN ALI
             </h2>
@@ -46,7 +45,7 @@ const Developer: React.FC = () => {
             {[
               { label: 'Specialization', val: 'Quranic AI' },
               { label: 'Network', val: 'Al-Malik Global' },
-              { label: 'Vision', val: 'Sovereign Utility' }
+              { label: 'Vision', val: 'Islamic Utility' }
             ].map((stat, i) => (
               <div key={i} className="p-4 bg-slate-50 dark:bg-navy-950/60 rounded-[1.5rem] border border-gold/5">
                 <p className="text-[7px] md:text-[9px] font-black text-gold uppercase tracking-widest mb-1">{stat.label}</p>

@@ -33,7 +33,6 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Default to Karachi coordinates
         const latitude = 24.8607;
         const longitude = 67.0011;
         
@@ -42,14 +41,13 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
         setTimes(pData.data.timings);
 
         const randomAyahNum = Math.floor(Math.random() * 6236) + 1;
-        // Fetch Arabic, English, and Urdu translations for the daily verse
         const aRes = await fetch(`https://api.alquran.cloud/v1/ayah/${randomAyahNum}/editions/quran-uthmani,en.sahih,ur.jalandhry`);
         const aData = await aRes.json();
         setAyah({
           number: aData.data[0].number,
           text: aData.data[0].text,
-          translation: aData.data[1].text, // English
-          urduTranslation: aData.data[2].text, // Urdu
+          translation: aData.data[1].text,
+          urduTranslation: aData.data[2].text,
           audio: `https://cdn.islamic.network/quran/audio/128/ar.alafasy/${randomAyahNum}.mp3`,
           numberInSurah: aData.data[0].numberInSurah,
           surah: aData.data[0].surah
@@ -89,11 +87,11 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
   return (
     <div className="space-y-10 pb-20 max-w-7xl mx-auto px-2">
       {/* Hero Section */}
-      <section className="relative h-[400px] md:h-[500px] rounded-[2.5rem] md:rounded-[4rem] overflow-hidden shadow-2xl border-b-4 md:border-b-8 border-gold group">
+      <section className="relative h-[400px] md:h-[500px] rounded-[2rem] md:rounded-[4rem] overflow-hidden shadow-2xl border-b-4 md:border-b-8 border-gold group">
         <img 
-          src="https://images.unsplash.com/photo-1591604129939-f1efa4d9f7fa?q=80&w=2070&auto=format&fit=crop" 
+          src="https://images.unsplash.com/photo-1564769625905-50e9ad63ef9f?q=80&w=2070&auto=format&fit=crop" 
           className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
-          alt="Beautiful Mosque Architecture"
+          alt="The Holy Kaaba in Makkah"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-navy-950/95 via-navy-950/70 to-transparent flex items-center">
           <div className="p-6 md:p-20 space-y-4 md:space-y-6 max-w-4xl animate-in slide-in-from-left duration-700">
@@ -105,7 +103,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
                THE HOLY <span className="text-gradient-gold">QURAN</span>
              </h1>
              <p className="text-emerald-50/80 text-[10px] md:text-xl font-black max-w-2xl leading-relaxed uppercase tracking-widest">
-               READ FIRST. READ AND LISTEN TO ALL 114 SURAHS WITH CLEAR TRANSLATION.
+               READ AND LISTEN TO ALL 114 SURAHS WITH CLEAR TRANSLATION.
              </p>
              <div className="flex flex-row gap-3 pt-4">
                 <button 
@@ -142,7 +140,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
       </div>
 
       <section className="grid lg:grid-cols-2 gap-6 md:gap-8">
-        <div className="bg-emerald-950 rounded-[2.5rem] md:rounded-[4rem] p-8 md:p-12 text-white shadow-2xl relative overflow-hidden flex flex-col justify-center border-l-4 md:border-l-[12px] border-gold min-h-[450px]">
+        <div className="bg-emerald-950 rounded-[2rem] md:rounded-[4rem] p-8 md:p-12 text-white shadow-2xl relative overflow-hidden flex flex-col justify-center border-l-4 md:border-l-[12px] border-gold min-h-[450px]">
            <div className="relative z-10 space-y-6 text-center">
               <span className="px-3 py-1 bg-gold/20 border border-gold/40 rounded-full text-gold text-[7px] md:text-[9px] font-black tracking-widest uppercase">Daily Verse</span>
               {ayah && (
@@ -153,7 +151,9 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
                   <div className="pt-6 border-t border-white/10 space-y-3">
                      <p className="text-gold/90 font-bold text-sm md:text-lg italic px-4">"{ayah.translation}"</p>
                      <p className="arabic-text text-lg md:text-2xl text-emerald-100 font-bold px-4">{ayah.urduTranslation}</p>
-                     <p className="text-gold font-black text-xs md:text-sm mt-4">Surah {ayah.surah?.englishName} • Ayah {ayah.numberInSurah}</p>
+                     <p className="text-gold font-black text-[10px] md:text-sm mt-4">
+                        {ayah.surah?.name} • {ayah.surah?.englishName} • Ayah {ayah.numberInSurah}
+                     </p>
                      <audio controls src={ayah.audio} className="w-full max-w-xs mx-auto h-6 mt-4 opacity-40 hover:opacity-100 transition-all filter invert" />
                   </div>
                 </>
@@ -161,10 +161,10 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
            </div>
         </div>
 
-        <div className="bg-white dark:bg-navy-900 rounded-[2.5rem] md:rounded-[4rem] p-8 md:p-12 shadow-2xl border border-gold/10 flex flex-col justify-center min-h-[450px]">
+        <div className="bg-white dark:bg-navy-900 rounded-[2rem] md:rounded-[4rem] p-8 md:p-12 shadow-2xl border border-gold/10 flex flex-col justify-center min-h-[450px]">
            <div className="relative z-10 space-y-8 text-center">
               <div>
-                <span className="px-3 py-1 bg-emerald-100 dark:bg-navy-800 border border-emerald-200 dark:border-navy-700 rounded-full text-emerald-700 dark:text-emerald-400 text-[7px] md:text-[9px] font-black tracking-widest uppercase">Prophetic Wisdom</span>
+                <span className="px-3 py-1 bg-emerald-100 dark:bg-navy-800 border border-emerald-200 dark:border-navy-700 rounded-full text-emerald-700 dark:text-emerald-400 text-[7px] md:text-[9px] font-black tracking-widest uppercase">Hadith (حدیث)</span>
               </div>
               {hadith && (
                 <div className="space-y-6">
