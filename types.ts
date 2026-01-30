@@ -40,10 +40,18 @@ export interface PrayerTimes {
 }
 
 export interface ChatMessage {
+  id: string;
   role: 'user' | 'model';
   text: string;
   timestamp: Date;
   groundingUrls?: { title: string; uri: string }[];
+}
+
+export interface ChatSession {
+  id: string;
+  title: string;
+  messages: ChatMessage[];
+  updatedAt: number;
 }
 
 export interface LibraryItem {
@@ -59,6 +67,7 @@ export interface LibraryItem {
   description: string;
 }
 
+// Added GalleryItem interface to support ArtGallery component
 export interface GalleryItem {
   id: string;
   url: string;
