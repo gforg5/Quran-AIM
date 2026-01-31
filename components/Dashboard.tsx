@@ -1,7 +1,8 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { PrayerTimes, Ayah, Hadith, AppTab } from '../types';
-import { MalikLogo, FajrIcon, SunriseIcon, DhuhrIcon, AsrIcon, MaghribIcon, IshaIcon } from './Icons';
+import { MalikLogo, FajrIcon, SunriseIcon, DhuhrIcon, AsrIcon, MaghribIcon, IshaIcon, SpeakerIcon } from './Icons';
+import { speakGuidance, decodeAudio, decodeAudioData } from '../services/geminiService';
 
 interface DashboardProps {
   setActiveTab: (tab: AppTab) => void;
@@ -12,6 +13,10 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
   const [ayah, setAyah] = useState<Ayah | null>(null);
   const [hadith, setHadith] = useState<Hadith | null>(null);
   const [loading, setLoading] = useState(true);
+  const [voiceLoading, setVoiceLoading] = useState<string | null>(null);
+  const [playingId, setPlayingId] = useState<string | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const activeSourceRef = useRef<AudioBufferSourceNode | null>(null);
 
   const urduNames: Record<string, string> = {
     Fajr: "فجر",
@@ -39,6 +44,58 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
     return `${hours12}:${minutes.toString().padStart(2, '0')} ${period}`;
   };
 
+  const stopAudio = () => {
+    if (activeSourceRef.current) {
+      try { activeSourceRef.current.stop(); } catch(e) {}
+      activeSourceRef.current = null;
+    }
+    setPlayingId(null);
+    setVoiceLoading(null);
+  };
+
+  const handleVoicePlay = async (text: string, lang: 'en' | 'ur', id: string) => {
+    // If clicking same button that is already playing/loading, stop it
+    if (playingId === id || voiceLoading === id) {
+      stopAudio();
+      return;
+    }
+
+    // Stop anything currently playing
+    stopAudio();
+    
+    setVoiceLoading(id);
+
+    try {
+      if (!audioContextRef.current) {
+        audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
+      }
+      const ctx = audioContextRef.current;
+      if (ctx.state === 'suspended') await ctx.resume();
+      
+      const base64 = await speakGuidance(text, lang === 'ur');
+      const audioBytes = decodeAudio(base64);
+      const audioBuffer = await decodeAudioData(audioBytes, ctx, 24000, 1);
+      
+      const source = ctx.createBufferSource();
+      source.buffer = audioBuffer;
+      source.connect(ctx.destination);
+      
+      source.onended = () => {
+        setPlayingId(null);
+        setVoiceLoading(null);
+      };
+
+      activeSourceRef.current = source;
+      setVoiceLoading(null);
+      setPlayingId(id);
+      source.start();
+    } catch (err) {
+      console.error(err);
+      setVoiceLoading(null);
+      setPlayingId(null);
+    }
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -49,15 +106,15 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
         const pData = await pRes.json();
         setTimes(pData.data.timings);
 
-        const randomAyahNum = Math.floor(Math.random() * 6236) + 1;
-        const aRes = await fetch(`https://api.alquran.cloud/v1/ayah/${randomAyahNum}/editions/quran-uthmani,en.sahih,ur.jalandhry`);
+        // Fetch Surah Ta-Ha Ayah 7
+        const aRes = await fetch(`https://api.alquran.cloud/v1/ayah/20:7/editions/quran-uthmani,en.sahih,ur.jalandhry`);
         const aData = await aRes.json();
         setAyah({
           number: aData.data[0].number,
           text: aData.data[0].text,
           translation: aData.data[1].text,
           urduTranslation: aData.data[2].text,
-          audio: `https://cdn.islamic.network/quran/audio/128/ar.alafasy/${randomAyahNum}.mp3`,
+          audio: `https://cdn.islamic.network/quran/audio/128/ar.alafasy/2353.mp3`,
           numberInSurah: aData.data[0].numberInSurah,
           surah: aData.data[0].surah
         });
@@ -67,7 +124,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
           collection: 'Sahih Bukhari',
           hadithNumber: '1',
           text: "Actions are but by intentions, and every man shall have only that which he intended.",
-          urduText: "اعمال کا دارومدار نیتوں پر ہی ہے اور ہر انسان کے لیے وہی ہے جس کی اس نے نیت کی۔",
+          urduText: "اعمال کا دارومدار نیتوں پر ہے اور ہر انسان کے لیے وہی ہے جس کی اس نے نیت کی۔",
           source: "Sahih Bukhari",
           narrator: "Umar ibn al-Khattab"
         });
@@ -79,6 +136,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
       }
     };
     fetchData();
+    return () => stopAudio();
   }, []);
 
   if (loading) return (
@@ -131,13 +189,13 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
         </div>
       </section>
 
-      {/* Prayer Times Section with Header */}
+      {/* Prayer Times Section */}
       <section className="space-y-6">
         <div className="space-y-2 mb-6">
           <div className="flex items-center gap-3">
-            <h3 className="text-xl md:text-3xl font-black text-navy-950 dark:text-white uppercase tracking-tighter italic">
-              Prayer Times <span className="text-gold not-italic">اوقات نماز</span>
-            </h3>
+             <h3 className="text-xl md:text-3xl font-black text-navy-950 dark:text-white uppercase tracking-tighter italic">
+               Prayer Times <span className="text-gold not-italic">اوقات نماز</span>
+             </h3>
           </div>
           <p className="text-[9px] md:text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-relaxed">
             Note: Times vary by city. These calculations are based on Karachi.
@@ -163,7 +221,8 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
       </section>
 
       <section className="grid lg:grid-cols-2 gap-6 md:gap-8">
-        <div className="bg-emerald-950 rounded-[2rem] md:rounded-[4rem] p-8 md:p-12 text-white shadow-2xl relative overflow-hidden flex flex-col justify-center border-l-4 md:border-l-[12px] border-gold min-h-[450px]">
+        {/* Ayah Card */}
+        <div className="bg-emerald-950 rounded-[2rem] md:rounded-[4rem] p-8 md:p-12 text-white shadow-2xl relative overflow-hidden flex flex-col justify-center border-l-4 md:border-l-[12px] border-gold min-h-[500px]">
            <div className="relative z-10 space-y-6 text-center">
               <span className="px-3 py-1 bg-gold/20 border border-gold/40 rounded-full text-gold text-[7px] md:text-[9px] font-black tracking-widest uppercase">Daily Verse (آیت)</span>
               {ayah && (
@@ -171,20 +230,38 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
                   <p className="arabic-text text-3xl md:text-4xl leading-relaxed text-center text-gradient-gold">
                     {ayah.text}
                   </p>
-                  <div className="pt-6 border-t border-white/10 space-y-3">
-                     <p className="text-gold/90 font-bold text-sm md:text-lg italic px-4">"{ayah.translation}"</p>
-                     <p className="arabic-text text-lg md:text-2xl text-emerald-100 font-bold px-4">{ayah.urduTranslation}</p>
-                     <p className="text-gold font-black text-[10px] md:text-sm mt-4">
+                  <div className="pt-6 border-t border-white/10 space-y-4">
+                     <div className="space-y-2">
+                        <p className="text-gold/90 font-bold text-sm md:text-lg italic px-4">"{ayah.translation}"</p>
+                        <p className="arabic-text text-lg md:text-2xl text-emerald-100 font-bold px-4">{ayah.urduTranslation}</p>
+                     </div>
+                     <p className="text-gold font-black text-[10px] md:text-sm">
                         {ayah.surah?.name} • {ayah.surah?.englishName} • Ayah {ayah.numberInSurah}
                      </p>
-                     <audio controls src={ayah.audio} className="w-full max-w-xs mx-auto h-6 mt-4 opacity-40 hover:opacity-100 transition-all filter invert" />
+                     <div className="flex flex-col items-center gap-2">
+                       <div className="flex justify-center gap-4">
+                          <button 
+                            onClick={() => handleVoicePlay(ayah.translation!, 'en', 'ayah-en')} 
+                            className={`flex items-center gap-2 px-6 py-3 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${playingId === 'ayah-en' ? 'bg-gold text-navy-950' : voiceLoading === 'ayah-en' ? 'bg-white/5 text-gold animate-pulse' : 'bg-white/5 text-gold hover:bg-gold hover:text-navy-950'}`}
+                          >
+                            <SpeakerIcon className="w-4 h-4" /> {voiceLoading === 'ayah-en' ? 'Connecting...' : playingId === 'ayah-en' ? 'Stop English' : 'Listen English'}
+                          </button>
+                          <button 
+                            onClick={() => handleVoicePlay(ayah.urduTranslation!, 'ur', 'ayah-ur')} 
+                            className={`flex items-center gap-2 px-6 py-3 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${playingId === 'ayah-ur' ? 'bg-gold text-navy-950' : voiceLoading === 'ayah-ur' ? 'bg-white/5 text-gold animate-pulse' : 'bg-white/5 text-gold hover:bg-gold hover:text-navy-950'}`}
+                          >
+                            <SpeakerIcon className="w-4 h-4" /> {voiceLoading === 'ayah-ur' ? 'Connecting...' : playingId === 'ayah-ur' ? 'Stop Urdu' : 'Listen Urdu'}
+                          </button>
+                       </div>
+                     </div>
                   </div>
                 </>
               )}
            </div>
         </div>
 
-        <div className="bg-white dark:bg-navy-900 rounded-[2rem] md:rounded-[4rem] p-8 md:p-12 shadow-2xl border border-gold/10 flex flex-col justify-center min-h-[450px]">
+        {/* Hadith Card */}
+        <div className="bg-white dark:bg-navy-900 rounded-[2rem] md:rounded-[4rem] p-8 md:p-12 shadow-2xl border border-gold/10 flex flex-col justify-center min-h-[500px]">
            <div className="relative z-10 space-y-8 text-center">
               <div>
                 <span className="px-3 py-1 bg-emerald-100 dark:bg-navy-800 border border-emerald-200 dark:border-navy-700 rounded-full text-emerald-700 dark:text-emerald-400 text-[7px] md:text-[9px] font-black tracking-widest uppercase">Hadith (حدیث)</span>
@@ -197,6 +274,20 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
                   <p className="arabic-text text-lg md:text-3xl font-bold text-emerald-700 dark:text-emerald-400 leading-relaxed">
                     {hadith.urduText}
                   </p>
+                  <div className="flex justify-center gap-4">
+                    <button 
+                      onClick={() => handleVoicePlay(hadith.text, 'en', 'hadith-en')}
+                      className={`flex items-center gap-2 px-6 py-3 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${playingId === 'hadith-en' ? 'bg-gold text-navy-950' : voiceLoading === 'hadith-en' ? 'bg-slate-100 dark:bg-navy-800 text-gold animate-pulse' : 'bg-slate-100 dark:bg-navy-800 text-slate-400 hover:text-gold'}`}
+                    >
+                      <SpeakerIcon className="w-4 h-4" /> {voiceLoading === 'hadith-en' ? 'Connecting...' : playingId === 'hadith-en' ? 'Stop English' : 'Listen English'}
+                    </button>
+                    <button 
+                      onClick={() => handleVoicePlay(hadith.urduText!, 'ur', 'hadith-ur')}
+                      className={`flex items-center gap-2 px-6 py-3 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${playingId === 'hadith-ur' ? 'bg-gold text-navy-950' : voiceLoading === 'hadith-ur' ? 'bg-slate-100 dark:bg-navy-800 text-gold animate-pulse' : 'bg-slate-100 dark:bg-navy-800 text-slate-400 hover:text-gold'}`}
+                    >
+                      <SpeakerIcon className="w-4 h-4" /> {voiceLoading === 'hadith-ur' ? 'Connecting...' : playingId === 'hadith-ur' ? 'Stop Urdu' : 'Listen Urdu'}
+                    </button>
+                  </div>
                   <div className="pt-6 border-t border-slate-100 dark:border-navy-800">
                      <p className="text-gold font-black text-lg md:text-xl mb-0.5">{hadith.source}</p>
                      <p className="text-slate-400 dark:text-emerald-500 text-[8px] md:text-[10px] font-bold uppercase tracking-widest">Narrated by {hadith.narrator}</p>

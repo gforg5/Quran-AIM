@@ -10,6 +10,7 @@ const HadithVault: React.FC = () => {
   const [search, setSearch] = useState('');
   const [selectedHadith, setSelectedHadith] = useState<Hadith | null>(null);
   const [isSpeaking, setIsSpeaking] = useState<string | null>(null);
+  const [voiceLoading, setVoiceLoading] = useState<string | null>(null);
   const [bookmarkedHadiths, setBookmarkedHadiths] = useState<string[]>([]);
   const [activeCollection, setActiveCollection] = useState('All');
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -92,23 +93,26 @@ const HadithVault: React.FC = () => {
     localStorage.setItem('almalik_hadith_bookmarks', JSON.stringify(newBookmarks));
   };
 
+  const stopAudio = () => {
+    if (activeSourceRef.current) {
+      try { activeSourceRef.current.stop(); } catch(e) {}
+      activeSourceRef.current = null;
+    }
+    setIsSpeaking(null);
+    setVoiceLoading(null);
+  };
+
   const handleVoiceInsight = async (h: Hadith, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
     
-    if (isSpeaking === h.id) {
-      if (activeSourceRef.current) {
-        try { activeSourceRef.current.stop(); } catch(e) {}
-        activeSourceRef.current = null;
-      }
-      setIsSpeaking(null);
+    // Toggle logic: If clicking same thing that's already speaking/loading, stop it
+    if (isSpeaking === h.id || voiceLoading === h.id) {
+      stopAudio();
       return;
     }
 
-    if (activeSourceRef.current) {
-      try { activeSourceRef.current.stop(); } catch(e) {}
-    }
-
-    setIsSpeaking(h.id);
+    stopAudio();
+    setVoiceLoading(h.id);
     
     try {
       if (!audioContextRef.current) {
@@ -117,7 +121,6 @@ const HadithVault: React.FC = () => {
       const ctx = audioContextRef.current;
       if (ctx.state === 'suspended') await ctx.resume();
       
-      // Speak ONLY the Urdu text in a male voice
       const base64 = await speakGuidance(h.urduText || h.text, true);
       const audioBytes = decodeAudio(base64);
       const audioBuffer = await decodeAudioData(audioBytes, ctx, 24000, 1);
@@ -125,16 +128,20 @@ const HadithVault: React.FC = () => {
       const source = ctx.createBufferSource();
       source.buffer = audioBuffer;
       source.connect(ctx.destination);
+      
       source.onended = () => {
-        if (activeSourceRef.current === source) {
-          setIsSpeaking(null);
-        }
+        setIsSpeaking(null);
+        setVoiceLoading(null);
       };
+
       activeSourceRef.current = source;
+      setVoiceLoading(null);
+      setIsSpeaking(h.id);
       source.start();
     } catch (err) {
       console.error(err);
       setIsSpeaking(null);
+      setVoiceLoading(null);
     }
   };
 
@@ -229,9 +236,18 @@ const HadithVault: React.FC = () => {
                   <div className="flex md:flex-col justify-end items-center gap-4">
                      <button 
                        onClick={(e) => handleVoiceInsight(h, e)}
-                       className={`p-5 rounded-2xl transition-all shadow-lg ${isSpeaking === h.id ? 'bg-gold text-white scale-110 animate-pulse' : 'bg-slate-50 dark:bg-navy-800 text-slate-400 dark:text-slate-500 hover:text-gold'}`}
+                       className={`relative flex flex-col items-center justify-center p-5 rounded-2xl transition-all shadow-lg ${isSpeaking === h.id || voiceLoading === h.id ? 'bg-gold text-white scale-110' : 'bg-slate-50 dark:bg-navy-800 text-slate-400 dark:text-slate-500 hover:text-gold'}`}
                      >
-                        <SpeakerIcon className="w-5 h-5" />
+                        {voiceLoading === h.id ? (
+                          <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+                        ) : (
+                          <SpeakerIcon className="w-5 h-5" />
+                        )}
+                        {(isSpeaking === h.id || voiceLoading === h.id) && (
+                          <span className="absolute -bottom-6 text-[7px] font-black uppercase text-gold whitespace-nowrap">
+                            {voiceLoading === h.id ? 'Connecting...' : 'Stop'}
+                          </span>
+                        )}
                      </button>
                   </div>
                 </div>
@@ -243,7 +259,7 @@ const HadithVault: React.FC = () => {
         <div className="space-y-10 animate-in slide-in-from-right">
            <div className="flex items-center gap-4 pb-8 border-b border-slate-200 dark:border-slate-800">
               <button 
-                onClick={() => { setSelectedHadith(null); if(activeSourceRef.current) activeSourceRef.current.stop(); setIsSpeaking(null); }}
+                onClick={() => { setSelectedHadith(null); stopAudio(); }}
                 className="p-3 bg-slate-50 dark:bg-navy-900 hover:bg-gold hover:text-white rounded-2xl border border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 transition-all shadow-sm"
               >
                 <ArrowLeftIcon className="w-5 h-5" />
@@ -281,10 +297,14 @@ const HadithVault: React.FC = () => {
                     </div>
                     <button 
                       onClick={() => handleVoiceInsight(selectedHadith)}
-                      className={`w-full md:w-auto px-10 py-5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-xl flex items-center justify-center gap-4 border ${isSpeaking === selectedHadith.id ? 'bg-gold text-white border-gold animate-pulse' : 'bg-navy-950 dark:bg-gold text-white dark:text-navy-950 border-transparent'}`}
+                      className={`w-full md:w-auto px-10 py-5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-xl flex items-center justify-center gap-4 border ${isSpeaking === selectedHadith.id || voiceLoading === selectedHadith.id ? 'bg-gold text-white border-gold' : 'bg-navy-950 dark:bg-gold text-white dark:text-navy-950 border-transparent'}`}
                     >
-                      <SpeakerIcon className="w-5 h-5" />
-                      {isSpeaking === selectedHadith.id ? 'STOP PLAYING' : 'READ ALOUD (URDU)'}
+                      {voiceLoading === selectedHadith.id ? (
+                        <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+                      ) : (
+                        <SpeakerIcon className="w-5 h-5" />
+                      )}
+                      {voiceLoading === selectedHadith.id ? 'Connecting...' : isSpeaking === selectedHadith.id ? 'STOP PLAYING' : 'READ ALOUD (URDU)'}
                     </button>
                  </div>
                </div>

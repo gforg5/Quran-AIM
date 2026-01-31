@@ -10,6 +10,7 @@ const QuranExplorer: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [playingAyah, setPlayingAyah] = useState<number | null>(null);
+  const [audioLoading, setAudioLoading] = useState<number | null>(null);
   const [isAutoPlaying, setIsAutoPlaying] = useState(false);
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
   const [favorites, setFavorites] = useState<string[]>([]);
@@ -83,6 +84,7 @@ const QuranExplorer: React.FC = () => {
   const fetchAyahs = async (surahNumber: number, targetAyah?: number) => {
     setLoading(true);
     setPlayingAyah(null);
+    setAudioLoading(null);
     setIsAutoPlaying(false);
     if (audioRef.current) audioRef.current.pause();
     
@@ -117,20 +119,36 @@ const QuranExplorer: React.FC = () => {
   };
 
   const playAyah = (ayahNumber: number, audioUrl: string) => {
-    if (audioRef.current) {
-      audioRef.current.src = audioUrl;
-      audioRef.current.play().catch(() => {
-        setIsAutoPlaying(false);
-      });
+    if (!audioRef.current) return;
+
+    // Toggle logic: If same Ayah is playing or loading, stop it
+    if (playingAyah === ayahNumber || audioLoading === ayahNumber) {
+      audioRef.current.pause();
+      setPlayingAyah(null);
+      setAudioLoading(null);
+      setIsAutoPlaying(false);
+      return;
+    }
+
+    setAudioLoading(ayahNumber);
+    setPlayingAyah(null);
+    
+    audioRef.current.src = audioUrl;
+    audioRef.current.play().then(() => {
+      setAudioLoading(null);
       setPlayingAyah(ayahNumber);
       if (selectedSurah) updateProgress(selectedSurah.number, ayahNumber, selectedSurah.numberOfAyahs);
       document.getElementById(`ayah-${ayahNumber}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
+    }).catch(() => {
+      setAudioLoading(null);
+      setPlayingAyah(null);
+      setIsAutoPlaying(false);
+    });
   };
 
   const handleAudioEnd = () => {
     if (isAutoPlaying && playingAyah !== null) {
-      const nextIndex = playingAyah; 
+      const nextIndex = playingAyah; // index is ayah.number since they are 1-based
       if (nextIndex < ayahs.length) {
         playAyah(ayahs[nextIndex].number, ayahs[nextIndex].audio!);
       } else {
@@ -216,7 +234,7 @@ const QuranExplorer: React.FC = () => {
                 <h2 className="text-xl md:text-3xl font-black tracking-tight text-slate-900 dark:text-white playfair italic truncate">{selectedSurah.englishName}</h2>
               </div>
             </div>
-            <button onClick={() => { setIsAutoPlaying(!isAutoPlaying); if(!isAutoPlaying) playAyah(ayahs[0].number, ayahs[0].audio!); }} className={`flex items-center gap-2 px-6 py-3 rounded-2xl text-[9px] font-black uppercase tracking-widest transition-all shadow-lg border ${isAutoPlaying ? 'bg-gold text-white border-gold' : 'bg-navy-950 dark:bg-gold text-white dark:text-navy-950'}`}><SpeakerIcon className="w-4 h-4" />{isAutoPlaying ? 'PAUSE' : 'PLAY'}</button>
+            <button onClick={() => { if(isAutoPlaying) { audioRef.current?.pause(); setIsAutoPlaying(false); setPlayingAyah(null); } else { setIsAutoPlaying(true); playAyah(ayahs[0].number, ayahs[0].audio!); } }} className={`flex items-center gap-2 px-6 py-3 rounded-2xl text-[9px] font-black uppercase tracking-widest transition-all shadow-lg border ${isAutoPlaying ? 'bg-gold text-white border-gold' : 'bg-navy-950 dark:bg-gold text-white dark:text-navy-950'}`}><SpeakerIcon className="w-4 h-4" />{isAutoPlaying ? 'STOP' : 'PLAY ALL'}</button>
           </div>
 
           <div className="max-w-4xl mx-auto space-y-6 md:space-y-10">
@@ -226,11 +244,22 @@ const QuranExplorer: React.FC = () => {
               </div>
             )}
             {ayahs.map((ayah) => (
-                <div id={`ayah-${ayah.number}`} key={ayah.number} className={`relative group p-6 md:p-12 rounded-[2.5rem] md:rounded-[4rem] transition-all duration-500 border ${playingAyah === ayah.number ? 'bg-gold/5 dark:bg-gold/10 border-gold shadow-2xl scale-[1.01]' : 'bg-white dark:bg-navy-900/40 border-slate-50 dark:border-slate-800/50 hover:border-gold/20'}`}>
+                <div id={`ayah-${ayah.number}`} key={ayah.number} className={`relative group p-6 md:p-12 rounded-[2.5rem] md:rounded-[4rem] transition-all duration-500 border ${playingAyah === ayah.number || audioLoading === ayah.number ? 'bg-gold/5 dark:bg-gold/10 border-gold shadow-2xl scale-[1.01]' : 'bg-white dark:bg-navy-900/40 border-slate-50 dark:border-slate-800/50 hover:border-gold/20'}`}>
                   <div className="flex flex-col md:flex-row-reverse items-start gap-8 md:gap-12">
                     <div className="flex md:flex-col items-center gap-4 shrink-0 self-center md:self-start">
-                      <div className={`w-10 h-10 md:w-14 md:h-14 rounded-full border-2 flex items-center justify-center text-[10px] md:text-xs font-black transition-all ${playingAyah === ayah.number ? 'bg-gold border-gold text-navy-950' : 'border-slate-100 text-slate-500'}`}>{ayah.number}</div>
-                      <button onClick={() => playAyah(ayah.number, ayah.audio!)} className={`p-3 md:p-4 rounded-xl md:rounded-2xl transition-all shadow-md ${playingAyah === ayah.number ? 'bg-gold text-white scale-110' : 'bg-slate-50 dark:bg-navy-800 text-slate-400 hover:text-gold'}`}><SpeakerIcon className="w-4 h-4 md:w-5 md:h-5" /></button>
+                      <div className={`w-10 h-10 md:w-14 md:h-14 rounded-full border-2 flex items-center justify-center text-[10px] md:text-xs font-black transition-all ${playingAyah === ayah.number || audioLoading === ayah.number ? 'bg-gold border-gold text-navy-950' : 'border-slate-100 text-slate-500'}`}>{ayah.number}</div>
+                      <button onClick={() => playAyah(ayah.number, ayah.audio!)} className={`relative flex flex-col items-center justify-center p-3 md:p-4 rounded-xl md:rounded-2xl transition-all shadow-md ${playingAyah === ayah.number || audioLoading === ayah.number ? 'bg-gold text-white scale-110' : 'bg-slate-50 dark:bg-navy-800 text-slate-400 hover:text-gold'}`}>
+                        {audioLoading === ayah.number ? (
+                          <div className="w-4 h-4 md:w-5 md:h-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+                        ) : (
+                          <SpeakerIcon className="w-4 h-4 md:w-5 md:h-5" />
+                        )}
+                        {(playingAyah === ayah.number || audioLoading === ayah.number) && (
+                          <span className="absolute -bottom-6 text-[7px] font-black uppercase text-gold whitespace-nowrap">
+                            {audioLoading === ayah.number ? 'Connecting...' : 'Stop'}
+                          </span>
+                        )}
+                      </button>
                       <button 
                         onClick={() => toggleFavorite(selectedSurah.number, ayah.number)}
                         className={`p-2 transition-all ${favorites.includes(`${selectedSurah.number}:${ayah.number}`) ? 'text-red-500 scale-125' : 'text-slate-300 hover:text-red-400 opacity-30 hover:opacity-100'}`}

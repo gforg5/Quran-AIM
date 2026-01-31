@@ -152,19 +152,19 @@ export const SpeakerIcon: React.FC<IconProps> = ({ className }) => (
   </svg>
 );
 
-// Prayer Icons - Updated Fajr and Dhuhr for distinct looks
+// Distinct Prayer Icons
 export const FajrIcon: React.FC<IconProps> = ({ className }) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className={className} strokeWidth="1.5">
-    <path strokeLinecap="round" d="M2 18h20" />
-    <path strokeLinecap="round" strokeLinejoin="round" d="M17 18a5 5 0 1 0-10 0" />
-    <path d="M12 2v3M4.22 4.22l1.42 1.42M19.78 4.22l-1.42 1.42M1 12h2M21 12h2" strokeOpacity="0.6" strokeLinecap="round" />
+    <path strokeLinecap="round" d="M2 20h20" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M17 20a5 5 0 1 0-10 0" />
+    <path d="M12 4v3M5.64 7.05l1.41 1.41M18.36 7.05l-1.41 1.41" strokeOpacity="0.8" strokeLinecap="round" />
   </svg>
 );
 
 export const DhuhrIcon: React.FC<IconProps> = ({ className }) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className={className} strokeWidth="2">
     <circle cx="12" cy="12" r="4" />
-    <path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M1 12h3M20 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12" strokeLinecap="round" />
+    <path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" strokeLinecap="round" />
   </svg>
 );
 
