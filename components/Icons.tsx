@@ -52,7 +52,6 @@ export const InfoIcon: React.FC<IconProps> = ({ className }) => (
   </svg>
 );
 
-// Added AdviceIcon for AdviceHub
 export const AdviceIcon: React.FC<IconProps> = ({ className }) => (
   <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" className={className} strokeWidth={2}>
     <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
@@ -153,18 +152,19 @@ export const SpeakerIcon: React.FC<IconProps> = ({ className }) => (
   </svg>
 );
 
-// Prayer Icons
+// Prayer Icons - Updated Fajr and Dhuhr for distinct looks
 export const FajrIcon: React.FC<IconProps> = ({ className }) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className={className} strokeWidth="1.5">
-    <path d="M12 3V5M12 19V21M4.22 4.22L5.64 5.64M18.36 18.36L19.78 19.78M1 12H3M21 12H23M4.22 19.78L5.64 18.36M18.36 5.64L19.78 4.22M12 7A5 5 0 1 0 12 17A5 5 0 1 0 12 7Z" />
-    <path d="M12 13V15" strokeOpacity="0.5" />
+    <path strokeLinecap="round" d="M2 18h20" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M17 18a5 5 0 1 0-10 0" />
+    <path d="M12 2v3M4.22 4.22l1.42 1.42M19.78 4.22l-1.42 1.42M1 12h2M21 12h2" strokeOpacity="0.6" strokeLinecap="round" />
   </svg>
 );
 
 export const DhuhrIcon: React.FC<IconProps> = ({ className }) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className={className} strokeWidth="1.5">
-    <circle cx="12" cy="12" r="5" />
-    <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className={className} strokeWidth="2">
+    <circle cx="12" cy="12" r="4" />
+    <path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M1 12h3M20 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12" strokeLinecap="round" />
   </svg>
 );
 

@@ -131,20 +131,36 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
         </div>
       </section>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4">
-        {times && (Object.entries(times) as [string, string][]).filter(([k]) => ['Fajr', 'Sunrise', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'].includes(k)).map(([name, time]) => (
-          <div key={name} className="glass-ui p-4 md:p-6 rounded-[1.5rem] md:rounded-[2.5rem] flex flex-col items-center hover:shadow-xl transition-all border border-gold/5 bg-white/5 dark:bg-navy-900/40">
-             <div className="w-10 h-10 md:w-14 md:h-14 bg-navy-900/50 rounded-xl flex items-center justify-center mb-3">
-                <span className="text-gold">{prayerIcons[name]}</span>
-             </div>
-             <div className="text-center">
-                <span className="block text-[7px] md:text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">{name}</span>
-                <span className="block arabic-text text-sm md:text-lg text-gold font-bold mb-1">{urduNames[name]}</span>
-                <span className="text-sm md:text-lg font-black text-navy-950 dark:text-white tabular-nums">{format12h(time)}</span>
-             </div>
+      {/* Prayer Times Section with Header */}
+      <section className="space-y-6">
+        <div className="space-y-2 mb-6">
+          <div className="flex items-center gap-3">
+            <h3 className="text-xl md:text-3xl font-black text-navy-950 dark:text-white uppercase tracking-tighter italic">
+              Prayer Times <span className="text-gold not-italic">اوقات نماز</span>
+            </h3>
           </div>
-        ))}
-      </div>
+          <p className="text-[9px] md:text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-relaxed">
+            Note: Times vary by city. These calculations are based on Karachi.
+            <br className="hidden md:block"/>
+            (نوٹ: اوقات شہر کے لحاظ سے مختلف ہوتے ہیں۔ یہ حسابات کراچی کے مطابق ہیں۔)
+          </p>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4">
+          {times && (Object.entries(times) as [string, string][]).filter(([k]) => ['Fajr', 'Sunrise', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'].includes(k)).map(([name, time]) => (
+            <div key={name} className="glass-ui p-4 md:p-6 rounded-[1.5rem] md:rounded-[2.5rem] flex flex-col items-center hover:shadow-xl transition-all border border-gold/5 bg-white/5 dark:bg-navy-900/40">
+               <div className="w-10 h-10 md:w-14 md:h-14 bg-navy-900/50 rounded-xl flex items-center justify-center mb-3">
+                  <span className="text-gold">{prayerIcons[name]}</span>
+               </div>
+               <div className="text-center">
+                  <span className="block text-[7px] md:text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">{name}</span>
+                  <span className="block arabic-text text-sm md:text-lg text-gold font-bold mb-1">{urduNames[name]}</span>
+                  <span className="text-sm md:text-lg font-black text-navy-950 dark:text-white tabular-nums">{format12h(time)}</span>
+               </div>
+            </div>
+          ))}
+        </div>
+      </section>
 
       <section className="grid lg:grid-cols-2 gap-6 md:gap-8">
         <div className="bg-emerald-950 rounded-[2rem] md:rounded-[4rem] p-8 md:p-12 text-white shadow-2xl relative overflow-hidden flex flex-col justify-center border-l-4 md:border-l-[12px] border-gold min-h-[450px]">

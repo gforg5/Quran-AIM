@@ -60,7 +60,7 @@ const Layout: React.FC<LayoutProps> = ({ activeTab, setActiveTab, goHome, childr
           
           <button 
             onClick={() => setActiveTab(AppTab.TOOLS)}
-            title="Islamic Tools"
+            title="Explore"
             className={`p-2 md:p-3 rounded-xl transition-all ${activeTab === AppTab.TOOLS ? 'bg-gold text-white' : 'text-slate-400'}`}
           >
             <ToolsIcon className="w-4 h-4 md:w-5 md:h-5" />
@@ -96,15 +96,16 @@ const Layout: React.FC<LayoutProps> = ({ activeTab, setActiveTab, goHome, childr
               {activeTab === AppTab.QURAN ? 'Holy Quran' : 
                activeTab === AppTab.HADITH ? 'Hadith (حدیث)' :
                activeTab === AppTab.DEVELOPER ? 'SMA' : 
-               activeTab === AppTab.ABOUT ? 'Explore' :
+               activeTab === AppTab.ABOUT ? 'About' :
                activeTab === AppTab.SYSTEMS_DEVELOPMENT ? 'Systems Development' : 
-               activeTab === AppTab.SADAQAH ? 'Sadaqah' : 'Explore'}
+               activeTab === AppTab.SADAQAH ? 'Sadaqah' : 
+               activeTab === AppTab.TOOLS ? 'Explore' : 'About'}
              </h1>
           </div>
           
           <div className="flex items-center gap-3">
             <button onClick={() => setActiveTab(AppTab.DEVELOPER)} className={`text-[9px] font-black uppercase tracking-[0.2em] ${activeTab === AppTab.DEVELOPER ? 'text-gold' : 'text-slate-500'}`}>SMA</button>
-            <button onClick={() => setActiveTab(AppTab.ABOUT)} className={`text-[9px] font-black uppercase tracking-[0.2em] ${activeTab === AppTab.ABOUT ? 'text-gold' : 'text-slate-500'}`}>Explore</button>
+            <button onClick={() => setActiveTab(AppTab.ABOUT)} className={`text-[9px] font-black uppercase tracking-[0.2em] ${activeTab === AppTab.ABOUT ? 'text-gold' : 'text-slate-500'}`}>About</button>
           </div>
         </header>
 
