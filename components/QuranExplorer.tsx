@@ -180,11 +180,8 @@ const QuranExplorer: React.FC<QuranExplorerProps> = ({ onAudioStateChange, activ
   };
 
   const getBilingualTranslation = (surah: Surah) => {
-    // Specifically mapping the user's requested titles
     if (surah.number === 1) return { en: "THE OPENING", ur: "فاتحہ", ps: "پیل" };
     if (surah.number === 2) return { en: "THE COW", ur: "بقرہ", ps: "غوا" };
-    
-    // Fallback for others using the API's English translation
     return { en: surah.englishNameTranslation.toUpperCase(), ur: surah.name.split(' ').pop() || '', ps: "د سورت مانا" };
   };
 
@@ -238,7 +235,7 @@ const QuranExplorer: React.FC<QuranExplorerProps> = ({ onAudioStateChange, activ
                 >
                   <div className="absolute top-0 left-0 h-1 bg-gold transition-all duration-1000" style={{ width: `${progress}%` }}></div>
                   
-                  <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center justify-between mb-4">
                     <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-[10px] md:text-xs font-black text-slate-400 group-hover:bg-gold group-hover:text-white transition-all shadow-inner">
                       {surah.number}
                     </div>
@@ -250,22 +247,17 @@ const QuranExplorer: React.FC<QuranExplorerProps> = ({ onAudioStateChange, activ
                     </div>
                   </div>
 
-                  <div className="space-y-3">
+                  <div className="space-y-1">
                     <h4 className="text-base md:text-lg font-black text-slate-800 dark:text-slate-100 uppercase tracking-tighter leading-none group-hover:text-gold transition-colors">
                       {surah.englishName}
                     </h4>
                     
-                    <div className="space-y-1 pt-2 border-t border-slate-50 dark:border-slate-800/30">
-                       <p className="arabic-text text-sm md:text-base text-gold font-bold">
-                         {translations.en} / {translations.ur} / {translations.ps}
-                       </p>
-                       <p className="text-[7px] md:text-[8px] font-bold text-slate-400 uppercase tracking-widest">
-                         (English / Urdu / Pashto)
-                       </p>
-                    </div>
+                    <p className="text-[9px] md:text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-relaxed">
+                      {translations.en} <span className="mx-1 opacity-20">|</span> {translations.ur} <span className="mx-1 opacity-20">|</span> {translations.ps}
+                    </p>
                     
                     <div className="flex items-center justify-between pt-2">
-                       <span className="text-[9px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-widest">{surah.numberOfAyahs} Ayahs</span>
+                       <span className="text-[8px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-widest">{surah.numberOfAyahs} Ayahs</span>
                     </div>
                   </div>
                 </div>

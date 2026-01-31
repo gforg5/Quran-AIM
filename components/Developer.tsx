@@ -12,7 +12,7 @@ const Developer: React.FC = () => {
           </div>
           <div className="relative z-10 w-28 h-28 md:w-40 md:h-40 rounded-full flex items-center justify-center border-2 md:border-4 border-gold shadow-2xl overflow-hidden bg-navy-900">
             <img 
-              src="https://github.com/gforg5/Nano-Lens/blob/main/WhatsApp%20Image%202026-01-30%20at%208.34.10%20PM.jpeg?raw=true" 
+              src="https://github.com/gforg5/Nano-Lens/blob/main/1769069098374.png?raw=true" 
               alt="Sayed Mohsin Ali" 
               className="w-full h-full object-cover"
             />
@@ -50,7 +50,7 @@ const Developer: React.FC = () => {
             {[
               { label: 'SPECIALIZATION', val: 'SYSTEMS DEVELOPMENT' },
               { label: 'Network', val: 'Al-Malik Global' },
-              { label: 'Vision', val: 'ISLAMIC UNITY AND SPECIALIZATION' }
+              { label: 'Vision', val: 'ISLAMIC UNITY' }
             ].map((stat, i) => (
               <div key={i} className="p-3 md:p-4 bg-slate-50 dark:bg-navy-950/60 rounded-[1.5rem] border border-gold/5 flex flex-col justify-center min-h-[70px]">
                 <p className="text-[6px] md:text-[8px] font-black text-gold uppercase tracking-tighter mb-0.5">{stat.label}</p>
