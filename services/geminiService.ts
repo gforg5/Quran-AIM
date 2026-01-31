@@ -7,7 +7,7 @@ export const getIslamicGuidance = async (query: string, history: any[]) => {
   
   try {
     const contents = history.map(m => ({
-      role: m.role,
+      role: m.role === 'model' ? 'model' : 'user',
       parts: [{ text: m.text }]
     }));
     contents.push({ role: 'user', parts: [{ text: query }] });
@@ -16,7 +16,7 @@ export const getIslamicGuidance = async (query: string, history: any[]) => {
       model: 'gemini-3-flash-preview',
       contents: contents,
       config: {
-        systemInstruction: "You are 'Al-Malik AI', a professional male Islamic scholar. Provide accurate, cited information. DO NOT use markdown symbols like # or * or dots in the formatting. Keep text clear and simple. If the user asks in English, provide English response but include relevant Urdu translations. If the user asks in Urdu, respond in Urdu. Maintain a respectful tone. Use Google Search for news or recent context.",
+        systemInstruction: "You are 'Al-Malik AI', a professional male Islamic scholar. Provide accurate, cited information. DO NOT use markdown symbols like # or * or dots in the formatting for headers. Keep text clear and simple. Use paragraphs for separation. If the user asks in English, provide English response but include relevant Urdu translations. If the user asks in Urdu, respond in Urdu. Maintain a respectful tone. Use Google Search ONLY when necessary for current events.",
         tools: [{ googleSearch: {} }]
       }
     });
@@ -27,7 +27,7 @@ export const getIslamicGuidance = async (query: string, history: any[]) => {
       uri: chunk.web?.uri || ''
     })).filter(u => u.uri);
 
-    // Clean response text from symbols
+    // Clean response text from heavy symbols while keeping meaning
     let cleanedText = response.text || '';
     cleanedText = cleanedText.replace(/[#*]/g, '').trim();
 
@@ -36,7 +36,7 @@ export const getIslamicGuidance = async (query: string, history: any[]) => {
       urls: urls
     };
   } catch (err) {
-    console.error("Gemini Text Error:", err);
+    console.error("Gemini Guidance Error:", err);
     throw err;
   }
 };

@@ -47,7 +47,12 @@ const AIScholar: React.FC = () => {
           const parsed = JSON.parse(saved);
           setMessages(parsed.map((m: any) => ({ ...m, timestamp: new Date(m.timestamp) })));
         } catch (e) {
-          setMessages([]);
+          setMessages([{ 
+            id: 'initial', 
+            role: 'model', 
+            text: `Assalamu Alaikum ${userId}. I am your Al-Malik AI Scholar. How may I assist you today?`, 
+            timestamp: new Date() 
+          }]);
         }
       } else {
         setMessages([{ 
@@ -180,19 +185,30 @@ const AIScholar: React.FC = () => {
   const handleSend = async (overrideInput?: string) => {
     const textToSend = overrideInput || input;
     if (!textToSend.trim() || loading) return;
-    await resumeContexts();
-    setMessages(prev => [...prev, { id: Date.now().toString(), role: 'user', text: textToSend, timestamp: new Date() }]);
+    
+    const newUserMsg = { id: Date.now().toString(), role: 'user' as const, text: textToSend, timestamp: new Date() };
+    setMessages(prev => [...prev, newUserMsg]);
     setInput('');
     setLoading(true);
+    
     try {
-      const response = await getIslamicGuidance(textToSend, messages);
+      // Pass copy of messages including the new one
+      const response = await getIslamicGuidance(textToSend, [...messages]);
       setMessages(prev => [...prev, { 
         id: (Date.now() + 1).toString(),
-        role: 'model', text: response.text || "I apologize, the stream is silent.", 
-        timestamp: new Date(), groundingUrls: response.urls 
+        role: 'model', 
+        text: response.text || "I apologize, the stream is silent.", 
+        timestamp: new Date(), 
+        groundingUrls: response.urls 
       }]);
     } catch (err) {
-      setMessages(prev => [...prev, { id: Date.now().toString(), role: 'model', text: "Connection issues. Please retry.", timestamp: new Date() }]);
+      console.error("Chat Error:", err);
+      setMessages(prev => [...prev, { 
+        id: (Date.now() + 2).toString(), 
+        role: 'model', 
+        text: "I encountered a connection issue. Please ensure your API key is correctly set on Vercel and try again.", 
+        timestamp: new Date() 
+      }]);
     } finally {
       setLoading(false);
     }
@@ -200,7 +216,6 @@ const AIScholar: React.FC = () => {
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
-    alert("Copied to clipboard!");
   };
 
   const shareText = (text: string) => {
@@ -225,7 +240,7 @@ const AIScholar: React.FC = () => {
             </div>
           </div>
           <form onSubmit={handleLogin} className="space-y-4">
-             <input name="username" type="text" placeholder="Your Name e.g. Mohsin" className="w-full py-4 px-6 bg-slate-50 dark:bg-navy-900 rounded-2xl font-bold focus:ring-2 focus:ring-gold outline-none text-[10px] md:text-sm" required />
+             <input name="username" type="text" placeholder="Your Name" className="w-full py-4 px-6 bg-slate-50 dark:bg-navy-900 rounded-2xl font-bold focus:ring-2 focus:ring-gold outline-none text-[10px] md:text-sm" required />
              <button type="submit" className="w-full py-4 bg-gold text-navy-950 font-black rounded-2xl uppercase tracking-widest text-[10px]">ENTER</button>
           </form>
        </div>
@@ -254,10 +269,10 @@ const AIScholar: React.FC = () => {
           <span className="font-black text-[8px] md:text-[10px] uppercase tracking-widest truncate max-w-[120px]">{userId}'s Sanctuary</span>
         </div>
         <div className="flex gap-2">
-          <button onClick={startLiveVoiceSession} className="p-2 md:p-2.5 bg-white/5 hover:bg-gold hover:text-navy-950 rounded-lg transition-all border border-white/5">
+          <button onClick={startLiveVoiceSession} title="Live Voice" className="p-2 md:p-2.5 bg-white/5 hover:bg-gold hover:text-navy-950 rounded-lg transition-all border border-white/5">
              <SpeakerIcon className="w-3 h-3 md:w-4 md:h-4" />
           </button>
-          <button onClick={() => { setMessages([]); localStorage.removeItem(`almalik_history_${userId}`); }} className="p-2 md:p-2.5 bg-white/5 hover:bg-red-500 rounded-lg transition-all border border-white/5">
+          <button onClick={() => { setMessages([]); localStorage.removeItem(`almalik_history_${userId}`); }} title="Clear Chat" className="p-2 md:p-2.5 bg-white/5 hover:bg-red-500 rounded-lg transition-all border border-white/5">
             <UndoIcon className="w-3 h-3 md:w-4 md:h-4" />
           </button>
         </div>
@@ -272,9 +287,6 @@ const AIScholar: React.FC = () => {
               <div className="mt-4 pt-4 border-t border-navy-950/5 dark:border-white/5 flex gap-3">
                 <button onClick={() => copyToClipboard(m.text)} className="p-1.5 opacity-40 hover:opacity-100 transition-opacity"><CopyIcon className="w-3.5 h-3.5" /></button>
                 <button onClick={() => shareText(m.text)} className="p-1.5 opacity-40 hover:opacity-100 transition-opacity"><ShareIcon className="w-3.5 h-3.5" /></button>
-                {m.role === 'user' && (
-                  <button onClick={() => setInput(m.text)} className="p-1.5 opacity-40 hover:opacity-100 transition-opacity text-[8px] font-black uppercase tracking-widest">Edit</button>
-                )}
               </div>
 
               {m.groundingUrls && m.groundingUrls.length > 0 && (

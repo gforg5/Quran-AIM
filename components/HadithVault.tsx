@@ -135,13 +135,15 @@ const HadithVault: React.FC<HadithVaultProps> = ({ onAudioStateChange, activeAud
       source.connect(ctx.destination);
       
       source.onended = () => {
-        onAudioStateChange(null);
-        setVoiceLoading(null);
+        if (activeSourceRef.current === source) {
+          onAudioStateChange(null);
+          setVoiceLoading(null);
+        }
       };
 
       activeSourceRef.current = source;
       setVoiceLoading(null);
-      onAudioStateChange({ id: h.id, title: 'Hadith Recitation', subtitle: `${h.collection} • #${h.hadithNumber}`, type: 'hadith' });
+      onAudioStateChange({ id: h.id, title: 'Hadith Recitation', subtitle: `${h.collection}`, type: 'hadith' });
       source.start();
     } catch (err) {
       console.error(err);
@@ -306,7 +308,7 @@ const HadithVault: React.FC<HadithVaultProps> = ({ onAudioStateChange, activeAud
                       ) : (
                         <SpeakerIcon className="w-5 h-5" />
                       )}
-                      {voiceLoading === selectedHadith.id ? 'Connecting...' : activeAudio?.id === selectedHadith.id ? 'STOP PLAYING' : 'READ ALOUD (URDU)'}
+                      {voiceLoading === selectedHadith.id ? 'Connecting...' : activeAudio?.id === selectedHadith.id ? 'STOP' : 'PLAY'}
                     </button>
                  </div>
                </div>
