@@ -76,6 +76,13 @@ export interface GalleryItem {
   timestamp: Date;
 }
 
+export interface ActiveAudio {
+  id: string;
+  title: string;
+  subtitle: string;
+  type: 'ayah' | 'hadith';
+}
+
 export enum AppTab {
   QURAN = 'quran',
   HADITH = 'hadith',
