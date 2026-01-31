@@ -179,10 +179,10 @@ const QuranExplorer: React.FC<QuranExplorerProps> = ({ onAudioStateChange, activ
     }
   };
 
-  const getBilingualTranslation = (surah: Surah) => {
-    if (surah.number === 1) return { en: "THE OPENING", ur: "فاتحہ", ps: "پیل" };
-    if (surah.number === 2) return { en: "THE COW", ur: "بقرہ", ps: "غوا" };
-    return { en: surah.englishNameTranslation.toUpperCase(), ur: surah.name.split(' ').pop() || '', ps: "د سورت مانا" };
+  const getEnglishTranslationOnly = (surah: Surah) => {
+    if (surah.number === 1) return "THE OPENING";
+    if (surah.number === 2) return "THE COW";
+    return surah.englishNameTranslation.toUpperCase();
   };
 
   const filteredSurahs = surahs.filter(s => 
@@ -226,7 +226,7 @@ const QuranExplorer: React.FC<QuranExplorerProps> = ({ onAudioStateChange, activ
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 px-2">
             {filteredSurahs.map((surah) => {
               const progress = surahProgress[surah.number] || 0;
-              const translations = getBilingualTranslation(surah);
+              const englishTranslation = getEnglishTranslationOnly(surah);
               return (
                 <div 
                   key={surah.number} 
@@ -252,8 +252,8 @@ const QuranExplorer: React.FC<QuranExplorerProps> = ({ onAudioStateChange, activ
                       {surah.englishName}
                     </h4>
                     
-                    <p className="text-[9px] md:text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-relaxed">
-                      {translations.en} <span className="mx-1 opacity-20">|</span> {translations.ur} <span className="mx-1 opacity-20">|</span> {translations.ps}
+                    <p className="playfair text-[10px] md:text-[12px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-relaxed italic">
+                      {englishTranslation}
                     </p>
                     
                     <div className="flex items-center justify-between pt-2">
