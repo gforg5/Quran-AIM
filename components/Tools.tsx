@@ -21,10 +21,7 @@ const Tools: React.FC = () => {
         if (e.alpha !== null) setHeading(e.alpha);
       };
       window.addEventListener('deviceorientation', handleOrientation);
-      
-      // Calculate Qibla Angle (roughly for Mecca from typical user location or hardcoded)
-      setQiblaAngle(45); // Static example offset
-
+      setQiblaAngle(45); 
       return () => window.removeEventListener('deviceorientation', handleOrientation);
     }
   }, [activeTool]);
@@ -98,14 +95,6 @@ const Tools: React.FC = () => {
               <p className="text-slate-500 dark:text-emerald-200/70 text-lg md:text-xl leading-relaxed">
                 Simple Dhikr counter for your daily remembrance of Allah. (اللہ کا ذکر)
               </p>
-              <div className="grid gap-3">
-                 {['Subhan Allah (33x)', 'Alhamdulillah (33x)', 'Allahu Akbar (34x)'].map((p, i) => (
-                   <div key={i} className="flex items-center gap-6 p-6 md:p-8 bg-white dark:bg-navy-900 border border-gold/5 rounded-[2rem] shadow-xl hover:border-gold/30 transition-all">
-                      <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gold/10 flex items-center justify-center text-gold font-black text-lg italic">{i+1}</div>
-                      <span className="font-bold text-emerald-950 dark:text-emerald-50 text-base md:text-lg">{p}</span>
-                   </div>
-                 ))}
-              </div>
            </div>
         </div>
       )}
@@ -115,23 +104,18 @@ const Tools: React.FC = () => {
            <div className="w-[280px] h-[280px] md:w-[450px] md:h-[450px] relative flex items-center justify-center group shadow-[0_40px_80px_-20px_rgba(0,0,0,0.5)] rounded-full bg-white dark:bg-navy-950">
               <div className="absolute inset-0 rounded-full border-[8px] md:border-[15px] border-emerald-950 dark:border-black shadow-inner"></div>
               <div className="absolute inset-4 md:inset-8 rounded-full border-2 border-gold/10"></div>
-              
               <div className="absolute inset-0 flex items-center justify-center transition-transform duration-1000 ease-out" style={{ transform: `rotate(${-heading + qiblaAngle}deg)` }}>
                  <div className="absolute top-6 md:top-10 flex flex-col items-center">
                     <div className="w-1 md:w-2 h-24 md:h-40 bg-gradient-to-t from-gold to-gold-light rounded-full shadow-[0_0_30px_rgba(212,175,55,1)]"></div>
                  </div>
               </div>
-
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                  <MalikLogo className="w-10 h-10 md:w-16 md:h-16 text-gold animate-sacred-glow" />
               </div>
            </div>
-           
            <div className="max-w-2xl text-center space-y-4">
               <h2 className="text-3xl md:text-5xl font-black text-emerald-950 dark:text-white tracking-tighter">Find <span className="text-gradient-gold">Qibla</span> Direction</h2>
-              <p className="text-slate-500 dark:text-emerald-400 font-bold text-sm md:text-lg italic uppercase tracking-widest">
-                Direction of the Kaaba (قبلہ کا رخ)
-              </p>
+              <p className="text-slate-500 dark:text-emerald-400 font-bold text-sm md:text-lg italic uppercase tracking-widest">Direction of the Kaaba (قبلہ کا رخ)</p>
            </div>
         </div>
       )}
@@ -163,14 +147,14 @@ const Tools: React.FC = () => {
               </div>
 
               {showZakatResult ? (
-                 <div className="mt-12 p-10 bg-emerald-950 text-white rounded-[3rem] border-4 border-gold shadow-2xl animate-in zoom-in-95 text-center">
+                 <div className="mt-12 p-8 md:p-10 bg-emerald-950 text-white rounded-[3rem] border-4 border-gold shadow-2xl animate-in zoom-in-95 text-center overflow-hidden">
                     <span className="text-[10px] font-black text-gold uppercase tracking-[0.4em] mb-4 block">Total Charity to Give</span>
-                    <p className="text-5xl md:text-7xl font-black mb-10 tracking-tighter text-gradient-gold">${calculateZakat()}</p>
+                    <p className="text-4xl md:text-6xl font-black mb-10 tracking-tighter text-gradient-gold break-all leading-tight">Rs. {calculateZakat()}</p>
                     <button onClick={() => setShowZakatResult(false)} className="px-10 py-5 bg-gold text-emerald-950 font-black rounded-xl uppercase tracking-widest text-[10px] shadow-xl">Start Over</button>
                  </div>
               ) : (
                  <button onClick={() => setShowZakatResult(true)} className="w-full mt-12 py-6 md:py-8 bg-emerald-950 dark:bg-gold text-white dark:text-emerald-950 font-black rounded-[2rem] md:rounded-[3rem] shadow-2xl hover:scale-[1.03] transition-all uppercase tracking-widest text-xs border border-gold/30">
-                   Calculate Now
+                   Calculate Now (PKR)
                  </button>
               )}
            </div>
@@ -179,22 +163,8 @@ const Tools: React.FC = () => {
               <div className="space-y-6">
                  <h4 className="text-5xl md:text-6xl font-black text-emerald-950 dark:text-white tracking-tighter leading-none italic playfair">Give <br/><span className="text-gradient-gold">Charity Simply</span></h4>
                  <p className="text-slate-500 dark:text-emerald-200/60 text-lg md:text-xl leading-relaxed font-medium">
-                   Zakat is one of the pillars of Islam. Use this simple tool to see your share for the needy.
+                   Zakat is one of the pillars of Islam. Use this tool to calculate your share in PKR.
                  </p>
-              </div>
-              <div className="grid gap-6">
-                 {[
-                   { title: "2.5% Share", detail: "Small part of your annual savings.", icon: "⚖️" },
-                   { title: "Helping Others", detail: "Your charity helps those who have less.", icon: "🤝" }
-                 ].map((card, i) => (
-                   <div key={i} className="flex items-center gap-6 p-8 bg-white dark:bg-navy-900 rounded-[2.5rem] border border-gold/10 shadow-lg transition-all group">
-                      <span className="text-4xl group-hover:scale-110 transition-transform">{card.icon}</span>
-                      <div>
-                         <p className="text-gold font-black uppercase tracking-widest text-[9px] mb-1">{card.title}</p>
-                         <p className="text-lg font-black text-emerald-950 dark:text-white tracking-tight leading-snug">{card.detail}</p>
-                      </div>
-                   </div>
-                 ))}
               </div>
            </div>
         </div>

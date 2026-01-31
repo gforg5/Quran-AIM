@@ -86,12 +86,11 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
 
   return (
     <div className="space-y-10 pb-20 max-w-7xl mx-auto px-2">
-      {/* Hero Section - Using Makkah Image */}
       <section className="relative h-[400px] md:h-[500px] rounded-[2rem] md:rounded-[4rem] overflow-hidden shadow-2xl border-b-4 md:border-b-8 border-gold group">
         <img 
-          src="https://images.unsplash.com/photo-1564769625905-50e9ad63ef9f?q=80&w=2070&auto=format&fit=crop" 
+          src="https://images.unsplash.com/photo-1591604129939-f1efa4d9f7fa?q=80&w=2070&auto=format&fit=crop" 
           className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
-          alt="The Holy Kaaba in Makkah"
+          alt="Makkah Holy Kaaba"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-navy-950/95 via-navy-950/70 to-transparent flex items-center">
           <div className="p-6 md:p-20 space-y-4 md:space-y-6 max-w-4xl animate-in slide-in-from-left duration-700">
@@ -123,7 +122,6 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
         </div>
       </section>
 
-      {/* Prayer Times */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4">
         {times && (Object.entries(times) as [string, string][]).filter(([k]) => ['Fajr', 'Sunrise', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'].includes(k)).map(([name, time]) => (
           <div key={name} className="glass-ui p-4 md:p-6 rounded-[1.5rem] md:rounded-[2.5rem] flex flex-col items-center hover:shadow-xl transition-all border border-gold/5 bg-white/5 dark:bg-navy-900/40">

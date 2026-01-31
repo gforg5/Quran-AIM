@@ -3,14 +3,12 @@ import React, { useState, useRef, useEffect } from 'react';
 import { GoogleGenAI, LiveServerMessage, Modality } from '@google/genai';
 import { getIslamicGuidance, decodeAudio, decodeAudioData } from '../services/geminiService';
 import { ChatMessage } from '../types';
-import { MalikLogo, SparklesIcon, MicIcon, SpeakerIcon, ArrowLeftIcon, LoginIcon } from './Icons';
+import { MalikLogo, SparklesIcon, MicIcon, SpeakerIcon, ArrowLeftIcon, LoginIcon, ShareIcon, CopyIcon, UndoIcon } from './Icons';
 
 function encode(bytes: Uint8Array) {
   let binary = '';
   const len = bytes.byteLength;
-  for (let i = 0; i < len; i++) {
-    binary += String.fromCharCode(bytes[i]);
-  }
+  for (let i = 0; i < len; i++) binary += String.fromCharCode(bytes[i]);
   return btoa(binary);
 }
 
@@ -18,9 +16,7 @@ function decode(base64: string) {
   const binaryString = atob(base64);
   const len = binaryString.length;
   const bytes = new Uint8Array(len);
-  for (let i = 0; i < len; i++) {
-    bytes[i] = binaryString.charCodeAt(i);
-  }
+  for (let i = 0; i < len; i++) bytes[i] = binaryString.charCodeAt(i);
   return bytes;
 }
 
@@ -33,6 +29,7 @@ const AIScholar: React.FC = () => {
   const [isVoiceMode, setIsVoiceMode] = useState(false);
   const [isLiveActive, setIsLiveActive] = useState(false);
   const [liveTranscription, setLiveTranscription] = useState('');
+  const [isListening, setIsListening] = useState(false);
   
   const scrollRef = useRef<HTMLDivElement>(null);
   const liveSessionRef = useRef<any>(null);
@@ -97,10 +94,29 @@ const AIScholar: React.FC = () => {
     }
   };
 
+  const startVoiceInput = () => {
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert("Voice recognition not supported in this browser.");
+      return;
+    }
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'en-US';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.onstart = () => setIsListening(true);
+    recognition.onend = () => setIsListening(false);
+    recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript;
+      setInput(transcript);
+    };
+    recognition.start();
+  };
+
   const startLiveVoiceSession = async () => {
     setLoading(true);
     await resumeContexts();
-
     setIsVoiceMode(true);
     setIsLiveActive(true);
     setLiveTranscription('Connecting...');
@@ -141,19 +157,14 @@ const AIScholar: React.FC = () => {
               nextStartTimeRef.current += audioBuffer.duration;
               sourcesRef.current.add(source);
             }
-            if (message.serverContent?.interrupted) {
-              sourcesRef.current.forEach(s => { try { s.stop(); } catch(e) {} });
-              sourcesRef.current.clear();
-              nextStartTimeRef.current = 0;
-            }
           },
           onclose: () => setIsLiveActive(false),
           onerror: () => setIsLiveActive(false)
         },
         config: {
           responseModalities: [Modality.AUDIO],
-          speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Kore' } } },
-          systemInstruction: "You are the Al-Malik Voice Assistant. Concise and professional Islamic guidance.",
+          speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Fenrir' } } },
+          systemInstruction: "You are the Al-Malik Voice Assistant. Male, concise and professional Islamic guidance.",
           outputAudioTranscription: {}
         }
       });
@@ -169,7 +180,7 @@ const AIScholar: React.FC = () => {
   const handleSend = async (overrideInput?: string) => {
     const textToSend = overrideInput || input;
     if (!textToSend.trim() || loading) return;
-    await resumeContexts(); // Ensure audio context is ready if needed
+    await resumeContexts();
     setMessages(prev => [...prev, { id: Date.now().toString(), role: 'user', text: textToSend, timestamp: new Date() }]);
     setInput('');
     setLoading(true);
@@ -177,13 +188,26 @@ const AIScholar: React.FC = () => {
       const response = await getIslamicGuidance(textToSend, messages);
       setMessages(prev => [...prev, { 
         id: (Date.now() + 1).toString(),
-        role: 'model', text: response.text || "I apologize, the stream is silent. Please try again.", 
+        role: 'model', text: response.text || "I apologize, the stream is silent.", 
         timestamp: new Date(), groundingUrls: response.urls 
       }]);
     } catch (err) {
-      setMessages(prev => [...prev, { id: Date.now().toString(), role: 'model', text: "Connection issues. Please check your network and retry.", timestamp: new Date() }]);
+      setMessages(prev => [...prev, { id: Date.now().toString(), role: 'model', text: "Connection issues. Please retry.", timestamp: new Date() }]);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    alert("Copied to clipboard!");
+  };
+
+  const shareText = (text: string) => {
+    if (navigator.share) {
+      navigator.share({ title: 'Al-Malik Wisdom', text });
+    } else {
+      copyToClipboard(text);
     }
   };
 
@@ -223,40 +247,67 @@ const AIScholar: React.FC = () => {
           </div>
           <span className="font-black text-[8px] md:text-[10px] uppercase tracking-widest truncate max-w-[120px]">{userId}'s Sanctuary</span>
         </div>
-        <button onClick={startLiveVoiceSession} className="p-2 md:p-2.5 bg-white/5 hover:bg-gold hover:text-navy-950 rounded-lg transition-all border border-white/5">
-           <MicIcon className="w-3 h-3 md:w-4 md:h-4" />
-        </button>
+        <div className="flex gap-2">
+          <button onClick={startLiveVoiceSession} className="p-2 md:p-2.5 bg-white/5 hover:bg-gold hover:text-navy-950 rounded-lg transition-all border border-white/5">
+             <SpeakerIcon className="w-3 h-3 md:w-4 md:h-4" />
+          </button>
+          <button onClick={() => { setMessages([]); localStorage.removeItem(`almalik_history_${userId}`); }} className="p-2 md:p-2.5 bg-white/5 hover:bg-red-500 rounded-lg transition-all border border-white/5">
+            <UndoIcon className="w-3 h-3 md:w-4 md:h-4" />
+          </button>
+        </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 md:space-y-6 custom-scrollbar">
+      <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-6 md:space-y-8 custom-scrollbar bg-slate-50/20 dark:bg-navy-950/20">
         {messages.map((m) => (
-          <div key={m.id} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'} animate-in fade-in`}>
-            <div className={`max-w-[90%] md:max-w-[80%] p-3 md:p-4 rounded-xl md:rounded-2xl ${m.role === 'user' ? 'bg-navy-800 text-white rounded-tr-none' : 'bg-slate-50 dark:bg-navy-800/50 text-slate-700 dark:text-slate-100 rounded-tl-none border border-gold/5'}`}>
-              <div className="text-[10px] md:text-sm leading-relaxed whitespace-pre-wrap">{m.text}</div>
-              {m.groundingUrls && (
-                <div className="mt-2 flex flex-wrap gap-1">
-                  {m.groundingUrls.map((u, i) => <a key={i} href={u.uri} target="_blank" className="text-[7px] px-1.5 py-0.5 bg-gold/10 text-gold rounded border border-gold/20 truncate max-w-[150px]">{u.title}</a>)}
+          <div key={m.id} className={`flex flex-col ${m.role === 'user' ? 'items-end' : 'items-start'} animate-in fade-in`}>
+            <div className={`max-w-[85%] md:max-w-[75%] p-4 md:p-6 rounded-3xl ${m.role === 'user' ? 'bg-gold text-navy-950 shadow-lg rounded-tr-none' : 'bg-white dark:bg-navy-800 text-slate-700 dark:text-slate-100 shadow-md rounded-tl-none border border-gold/10'}`}>
+              <div className="text-sm md:text-base leading-relaxed whitespace-pre-wrap">{m.text}</div>
+              
+              <div className="mt-4 pt-4 border-t border-navy-950/5 dark:border-white/5 flex gap-3">
+                <button onClick={() => copyToClipboard(m.text)} className="p-1.5 opacity-40 hover:opacity-100 transition-opacity"><CopyIcon className="w-3.5 h-3.5" /></button>
+                <button onClick={() => shareText(m.text)} className="p-1.5 opacity-40 hover:opacity-100 transition-opacity"><ShareIcon className="w-3.5 h-3.5" /></button>
+                {m.role === 'user' && (
+                  <button onClick={() => setInput(m.text)} className="p-1.5 opacity-40 hover:opacity-100 transition-opacity text-[8px] font-black uppercase tracking-widest">Edit</button>
+                )}
+              </div>
+
+              {m.groundingUrls && m.groundingUrls.length > 0 && (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {m.groundingUrls.map((u, i) => <a key={i} href={u.uri} target="_blank" className="text-[8px] px-2 py-1 bg-gold/10 text-gold rounded-full border border-gold/20 truncate max-w-[150px]">{u.title}</a>)}
                 </div>
               )}
             </div>
+            <span className="text-[8px] font-black text-slate-400 dark:text-slate-600 mt-2 uppercase tracking-widest">{m.role === 'user' ? userId : 'Al-Malik Scholar'}</span>
           </div>
         ))}
-        {loading && <div className="flex gap-1 p-2"><div className="w-1 h-1 bg-gold rounded-full animate-bounce"></div><div className="w-1 h-1 bg-gold rounded-full animate-bounce delay-75"></div><div className="w-1 h-1 bg-gold rounded-full animate-bounce delay-150"></div></div>}
+        {loading && <div className="flex gap-2 p-2"><div className="w-1.5 h-1.5 bg-gold rounded-full animate-bounce"></div><div className="w-1.5 h-1.5 bg-gold rounded-full animate-bounce delay-100"></div><div className="w-1.5 h-1.5 bg-gold rounded-full animate-bounce delay-200"></div></div>}
         <div ref={scrollRef} />
       </div>
 
-      <div className="p-3 md:p-4 bg-white dark:bg-navy-900 border-t border-gold/10">
-        <div className="flex gap-2 max-w-3xl mx-auto">
-          <input 
-            type="text" 
-            value={input} 
-            onChange={(e) => setInput(e.target.value)} 
-            onKeyDown={(e) => e.key === 'Enter' && handleSend()} 
-            placeholder="Ask your guide..." 
-            className="flex-1 py-2 md:py-3 px-4 md:px-5 rounded-xl bg-slate-50 dark:bg-navy-800 border-none outline-none font-bold text-[10px] md:text-xs" 
-          />
-          <button onClick={() => handleSend()} className="p-2 md:p-3 bg-gold text-navy-950 rounded-xl shadow-lg hover:scale-105 active:scale-95 transition-all">
-            <SparklesIcon className="w-3 h-3 md:w-4 md:h-4" />
+      <div className="p-4 md:p-6 bg-white dark:bg-navy-900 border-t border-gold/10">
+        <div className="flex items-end gap-3 max-w-4xl mx-auto relative">
+          <div className="flex-1 bg-slate-100 dark:bg-navy-800 rounded-[2rem] p-2 flex items-center border border-gold/5 focus-within:border-gold transition-all">
+            <textarea 
+              rows={1}
+              value={input} 
+              onChange={(e) => setInput(e.target.value)} 
+              onKeyDown={(e) => { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }} 
+              placeholder="Type your question..." 
+              className="flex-1 py-3 px-6 bg-transparent border-none outline-none font-medium text-sm md:text-base resize-none max-h-40" 
+            />
+            <button 
+              onClick={startVoiceInput} 
+              className={`p-3 rounded-full transition-all ${isListening ? 'bg-red-500 text-white animate-pulse' : 'text-slate-400 hover:text-gold'}`}
+            >
+              <MicIcon className="w-5 h-5" />
+            </button>
+          </div>
+          <button 
+            onClick={() => handleSend()} 
+            disabled={!input.trim() || loading}
+            className="p-4 bg-gold text-navy-950 rounded-full shadow-2xl hover:scale-105 active:scale-95 transition-all disabled:opacity-30"
+          >
+            <SparklesIcon className="w-6 h-6" />
           </button>
         </div>
       </div>

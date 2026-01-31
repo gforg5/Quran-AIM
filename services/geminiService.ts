@@ -6,7 +6,6 @@ export const getIslamicGuidance = async (query: string, history: any[]) => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   
   try {
-    // Incorporate history into the contents for context-aware conversation
     const contents = history.map(m => ({
       role: m.role,
       parts: [{ text: m.text }]
@@ -17,20 +16,23 @@ export const getIslamicGuidance = async (query: string, history: any[]) => {
       model: 'gemini-3-flash-preview',
       contents: contents,
       config: {
-        systemInstruction: "You are 'Al-Malik AI', a world-class Islamic scholar assistant. Provide highly accurate, professional, and cited information based on the Quran, Sahih Bukhari, Sahih Muslim, and major Madhahib. Be concise and fast. If the user asks in English, provide English response but include relevant Urdu translations or verses where beneficial. If the user asks in Urdu, respond in Urdu. Always maintain a respectful and sacred tone. Use Google Search for news or recent context.",
+        systemInstruction: "You are 'Al-Malik AI', a professional male Islamic scholar. Provide accurate, cited information. DO NOT use markdown symbols like # or * or dots in the formatting. Keep text clear and simple. If the user asks in English, provide English response but include relevant Urdu translations. If the user asks in Urdu, respond in Urdu. Maintain a respectful tone. Use Google Search for news or recent context.",
         tools: [{ googleSearch: {} }]
       }
     });
 
-    // Always extract grounding URLs when using googleSearch tool
     const groundingChunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
     const urls = groundingChunks.map((chunk: any) => ({
       title: chunk.web?.title || 'Source',
       uri: chunk.web?.uri || ''
     })).filter(u => u.uri);
 
+    // Clean response text from symbols
+    let cleanedText = response.text || '';
+    cleanedText = cleanedText.replace(/[#*]/g, '').trim();
+
     return {
-      text: response.text || '',
+      text: cleanedText,
       urls: urls
     };
   } catch (err) {
@@ -53,7 +55,6 @@ export const generateIslamicArt = async (prompt: string, aspectRatio: string = "
     }
   });
 
-  // Find the image part in the response
   for (const part of response.candidates?.[0]?.content.parts || []) {
     if (part.inlineData) {
       return `data:image/png;base64,${part.inlineData.data}`;
@@ -82,7 +83,6 @@ export const editIslamicImage = async (base64Image: string, prompt: string, aspe
     }
   });
 
-  // Find the image part in the response
   for (const part of response.candidates?.[0]?.content.parts || []) {
     if (part.inlineData) {
       return `data:image/png;base64,${part.inlineData.data}`;
@@ -91,17 +91,21 @@ export const editIslamicImage = async (base64Image: string, prompt: string, aspe
   throw new Error("Failed to edit art");
 };
 
-// Voice synthesis for the Scholar
-export const speakGuidance = async (text: string) => {
+// Voice synthesis with a male voice (Fenrir)
+export const speakGuidance = async (text: string, forceUrdu: boolean = false) => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const promptText = forceUrdu 
+    ? `Read this Urdu text clearly in a professional male voice: ${text}`
+    : `Explain clearly in a professional male voice: ${text}`;
+
   const response = await ai.models.generateContent({
     model: "gemini-2.5-flash-preview-tts",
-    contents: [{ parts: [{ text: `Explain clearly as a scholar: ${text}` }] }],
+    contents: [{ parts: [{ text: promptText }] }],
     config: {
       responseModalities: [Modality.AUDIO],
       speechConfig: {
         voiceConfig: {
-          prebuiltVoiceConfig: { voiceName: 'Kore' },
+          prebuiltVoiceConfig: { voiceName: 'Fenrir' }, // Clear male voice
         },
       },
     },
@@ -112,7 +116,6 @@ export const speakGuidance = async (text: string) => {
   return base64Audio;
 };
 
-// Custom manual decode function following guidelines
 export function decodeAudio(base64: string) {
   const binaryString = atob(base64);
   const len = binaryString.length;
@@ -123,7 +126,6 @@ export function decodeAudio(base64: string) {
   return bytes;
 }
 
-// Custom manual decode function following guidelines for raw PCM streaming
 export async function decodeAudioData(
   data: Uint8Array,
   ctx: AudioContext,

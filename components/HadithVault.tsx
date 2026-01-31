@@ -95,7 +95,6 @@ const HadithVault: React.FC = () => {
   const handleVoiceInsight = async (h: Hadith, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
     
-    // STOP LOGIC: If same is clicked, stop and reset
     if (isSpeaking === h.id) {
       if (activeSourceRef.current) {
         try { activeSourceRef.current.stop(); } catch(e) {}
@@ -105,7 +104,6 @@ const HadithVault: React.FC = () => {
       return;
     }
 
-    // Stop current source if any
     if (activeSourceRef.current) {
       try { activeSourceRef.current.stop(); } catch(e) {}
     }
@@ -119,7 +117,8 @@ const HadithVault: React.FC = () => {
       const ctx = audioContextRef.current;
       if (ctx.state === 'suspended') await ctx.resume();
       
-      const base64 = await speakGuidance(`Narrated by ${h.narrator}: ${h.hadithEnglish || h.text}.`);
+      // Speak ONLY the Urdu text in a male voice
+      const base64 = await speakGuidance(h.urduText || h.text, true);
       const audioBytes = decodeAudio(base64);
       const audioBuffer = await decodeAudioData(audioBytes, ctx, 24000, 1);
       
@@ -285,7 +284,7 @@ const HadithVault: React.FC = () => {
                       className={`w-full md:w-auto px-10 py-5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-xl flex items-center justify-center gap-4 border ${isSpeaking === selectedHadith.id ? 'bg-gold text-white border-gold animate-pulse' : 'bg-navy-950 dark:bg-gold text-white dark:text-navy-950 border-transparent'}`}
                     >
                       <SpeakerIcon className="w-5 h-5" />
-                      {isSpeaking === selectedHadith.id ? 'STOP PLAYING' : 'READ ALOUD'}
+                      {isSpeaking === selectedHadith.id ? 'STOP PLAYING' : 'READ ALOUD (URDU)'}
                     </button>
                  </div>
                </div>
