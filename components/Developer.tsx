@@ -27,29 +27,34 @@ const Developer: React.FC = () => {
             <div className="flex justify-center">
               <div className="inline-flex items-center gap-2 px-3 py-1 bg-gold/10 border border-gold/20 rounded-full">
                 <span className="w-1.5 h-1.5 bg-gold rounded-full animate-pulse"></span>
-                <span className="text-gold text-[7px] md:text-[9px] font-black uppercase tracking-widest">Systems Developer</span>
+                <span className="text-gold text-[7px] md:text-[9px] font-black uppercase tracking-widest">SMA • AL-MALIK WEB-SYSTEMS DEVELOPER</span>
               </div>
             </div>
           </div>
 
           <div className="space-y-4">
-            <p className="text-xs md:text-xl font-medium text-slate-600 dark:text-slate-100 max-w-xl mx-auto leading-relaxed italic">
-              "Building tools that bridge ancient wisdom with modern technology for the spiritual benefit of all."
-            </p>
+            <div className="space-y-3">
+              <p className="text-xs md:text-xl font-medium text-slate-600 dark:text-slate-100 max-w-xl mx-auto leading-relaxed italic">
+                "Building Web-Systems that connect with modern technology for the Islamic, religious, and spiritual benefit of all."
+              </p>
+              <p className="arabic-text text-sm md:text-lg text-gold font-bold leading-relaxed">
+                سب کے اسلامی، مذہبی اور روحانی فائدے کے لیے جدید ٹکنالوجی سے مربوط ویب سسٹم بنانا۔
+              </p>
+            </div>
             <p className="text-[7px] md:text-xs font-black text-slate-400 dark:text-gold/50 uppercase tracking-[0.3em]">
-              SAYED MOHSIN ALI • AL-MALIK SYSTEMS
+              SMA • AL-MALIK WEB-SYSTEMS DEVELOPER
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-6 pt-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4 pt-4">
             {[
-              { label: 'Specialization', val: 'Quranic AI' },
+              { label: 'SPECIALIZATION', val: 'SYSTEMS DEVELOPMENT' },
               { label: 'Network', val: 'Al-Malik Global' },
-              { label: 'Vision', val: 'Islamic Utility' }
+              { label: 'Vision', val: 'ISLAMIC UNITY AND SPECIALIZATION' }
             ].map((stat, i) => (
-              <div key={i} className="p-4 bg-slate-50 dark:bg-navy-950/60 rounded-[1.5rem] border border-gold/5">
-                <p className="text-[7px] md:text-[9px] font-black text-gold uppercase tracking-widest mb-1">{stat.label}</p>
-                <p className="text-[9px] md:text-sm font-black text-navy-950 dark:text-white uppercase">{stat.val}</p>
+              <div key={i} className="p-3 md:p-4 bg-slate-50 dark:bg-navy-950/60 rounded-[1.5rem] border border-gold/5 flex flex-col justify-center min-h-[70px]">
+                <p className="text-[6px] md:text-[8px] font-black text-gold uppercase tracking-tighter mb-0.5">{stat.label}</p>
+                <p className="text-[8px] md:text-xs font-black text-navy-950 dark:text-white uppercase whitespace-nowrap overflow-hidden text-ellipsis">{stat.val}</p>
               </div>
             ))}
           </div>

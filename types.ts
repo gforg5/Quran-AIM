@@ -80,9 +80,10 @@ export enum AppTab {
   QURAN = 'quran',
   HADITH = 'hadith',
   ART_STUDIO = 'art_studio',
-  QURAN_AI = 'quran_ai',
+  SYSTEMS_DEVELOPMENT = 'systems_development',
   LIBRARY = 'library',
   TOOLS = 'tools',
   DEVELOPER = 'developer',
-  ABOUT = 'about'
+  ABOUT = 'about',
+  SADAQAH = 'sadaqah'
 }

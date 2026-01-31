@@ -112,5 +112,23 @@
 <body class="antialiased selection:bg-gold selection:text-navy-950">
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
+    <script>
+      // Simple SW registration for "offline" capability simulation
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('data:text/javascript;base64,' + btoa(`
+            const CACHE_NAME = 'almalik-cache-v1';
+            self.addEventListener('install', event => {
+              self.skipWaiting();
+            });
+            self.addEventListener('fetch', event => {
+              event.respondWith(
+                fetch(event.request).catch(() => caches.match(event.request))
+              );
+            });
+          `));
+        });
+      }
+    </script>
 </body>
 </html>

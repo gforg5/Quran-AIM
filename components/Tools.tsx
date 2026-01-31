@@ -51,12 +51,12 @@ const Tools: React.FC = () => {
           <h2 className="text-3xl md:text-5xl font-black text-emerald-950 dark:text-white tracking-tighter uppercase italic playfair">Islamic <span className="text-gradient-gold">Tools</span></h2>
           <p className="text-slate-500 dark:text-emerald-400 font-bold uppercase tracking-widest text-[8px] md:text-[10px] mt-2">Helping you in your daily worship (عبادت)</p>
         </div>
-        <div className="flex bg-slate-100 dark:bg-emerald-950 p-2 rounded-[2rem] border border-gold/10 shadow-inner">
+        <div className="flex bg-slate-100 dark:bg-emerald-950 p-1 md:p-2 rounded-[2rem] border border-gold/10 shadow-inner overflow-hidden">
           {['tasbeeh', 'qibla', 'zakat'].map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTool(tab as any)}
-              className={`px-6 md:px-10 py-4 md:py-5 rounded-[1.5rem] text-[9px] md:text-xs font-black uppercase tracking-widest transition-all ${
+              className={`flex-1 min-w-0 px-1 md:px-10 py-3 md:py-5 rounded-[1.5rem] text-[6.5px] md:text-xs font-black uppercase tracking-tighter md:tracking-widest transition-all ${
                 activeTool === tab 
                   ? 'bg-gold text-emerald-950 shadow-2xl' 
                   : 'text-slate-400 dark:text-emerald-500/50 hover:text-gold'

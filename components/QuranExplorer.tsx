@@ -12,6 +12,7 @@ const QuranExplorer: React.FC = () => {
   const [playingAyah, setPlayingAyah] = useState<number | null>(null);
   const [isAutoPlaying, setIsAutoPlaying] = useState(false);
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
+  const [favorites, setFavorites] = useState<string[]>([]);
   const [surahProgress, setSurahProgress] = useState<Record<number, number>>({});
   const [showScrollTop, setShowScrollTop] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -20,6 +21,7 @@ const QuranExplorer: React.FC = () => {
   useEffect(() => {
     fetchSurahs();
     loadBookmarks();
+    loadFavorites();
     loadProgress();
   }, []);
 
@@ -37,6 +39,23 @@ const QuranExplorer: React.FC = () => {
     if (saved) setBookmarks(JSON.parse(saved));
   };
 
+  const loadFavorites = () => {
+    const saved = localStorage.getItem('almalik_favorites');
+    if (saved) setFavorites(JSON.parse(saved));
+  };
+
+  const toggleFavorite = (surahNum: number, ayahNum: number) => {
+    const key = `${surahNum}:${ayahNum}`;
+    let newFavs = [...favorites];
+    if (newFavs.includes(key)) {
+      newFavs = newFavs.filter(f => f !== key);
+    } else {
+      newFavs.push(key);
+    }
+    setFavorites(newFavs);
+    localStorage.setItem('almalik_favorites', JSON.stringify(newFavs));
+  };
+
   const loadProgress = () => {
     const saved = localStorage.getItem('almalik_surah_progress');
     if (saved) setSurahProgress(JSON.parse(saved));
@@ -47,24 +66,6 @@ const QuranExplorer: React.FC = () => {
     const newProgress = { ...surahProgress, [surahNumber]: percentage };
     setSurahProgress(newProgress);
     localStorage.setItem('almalik_surah_progress', JSON.stringify(newProgress));
-  };
-
-  const toggleBookmark = (ayahNumber: number) => {
-    if (!selectedSurah) return;
-    const existingIndex = bookmarks.findIndex(b => b.surahNumber === selectedSurah.number && b.ayahNumber === ayahNumber);
-    let newBookmarks = [...bookmarks];
-    if (existingIndex > -1) {
-      newBookmarks.splice(existingIndex, 1);
-    } else {
-      newBookmarks.push({
-        surahNumber: selectedSurah.number,
-        surahName: selectedSurah.englishName,
-        ayahNumber: ayahNumber,
-        timestamp: Date.now()
-      });
-    }
-    setBookmarks(newBookmarks);
-    localStorage.setItem('almalik_bookmarks', JSON.stringify(newBookmarks));
   };
 
   const fetchSurahs = async () => {
@@ -230,6 +231,14 @@ const QuranExplorer: React.FC = () => {
                     <div className="flex md:flex-col items-center gap-4 shrink-0 self-center md:self-start">
                       <div className={`w-10 h-10 md:w-14 md:h-14 rounded-full border-2 flex items-center justify-center text-[10px] md:text-xs font-black transition-all ${playingAyah === ayah.number ? 'bg-gold border-gold text-navy-950' : 'border-slate-100 text-slate-500'}`}>{ayah.number}</div>
                       <button onClick={() => playAyah(ayah.number, ayah.audio!)} className={`p-3 md:p-4 rounded-xl md:rounded-2xl transition-all shadow-md ${playingAyah === ayah.number ? 'bg-gold text-white scale-110' : 'bg-slate-50 dark:bg-navy-800 text-slate-400 hover:text-gold'}`}><SpeakerIcon className="w-4 h-4 md:w-5 md:h-5" /></button>
+                      <button 
+                        onClick={() => toggleFavorite(selectedSurah.number, ayah.number)}
+                        className={`p-2 transition-all ${favorites.includes(`${selectedSurah.number}:${ayah.number}`) ? 'text-red-500 scale-125' : 'text-slate-300 hover:text-red-400 opacity-30 hover:opacity-100'}`}
+                      >
+                        <svg className="w-6 h-6" fill={favorites.includes(`${selectedSurah.number}:${ayah.number}`) ? "currentColor" : "none"} viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                        </svg>
+                      </button>
                     </div>
                     <div className="flex-1 space-y-4 md:space-y-8 w-full">
                       <p className={`arabic-text text-2xl md:text-5xl lg:text-6xl text-right leading-[1.8] md:leading-[2] transition-colors duration-500 ${playingAyah === ayah.number ? 'text-gold' : 'text-slate-800 dark:text-slate-100'}`}>

@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { PrayerTimes, Ayah, Hadith, AppTab } from '../types';
-import { MalikLogo } from './Icons';
+import { MalikLogo, FajrIcon, SunriseIcon, DhuhrIcon, AsrIcon, MaghribIcon, IshaIcon } from './Icons';
 
 interface DashboardProps {
   setActiveTab: (tab: AppTab) => void;
@@ -20,6 +20,15 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
     Asr: "عصر",
     Maghrib: "مغرب",
     Isha: "عشاء"
+  };
+
+  const prayerIcons: Record<string, React.ReactNode> = {
+    Fajr: <FajrIcon className="w-6 h-6" />,
+    Sunrise: <SunriseIcon className="w-6 h-6" />,
+    Dhuhr: <DhuhrIcon className="w-6 h-6" />,
+    Asr: <AsrIcon className="w-6 h-6" />,
+    Maghrib: <MaghribIcon className="w-6 h-6" />,
+    Isha: <IshaIcon className="w-6 h-6" />,
   };
 
   const format12h = (time24: string) => {
@@ -126,7 +135,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
         {times && (Object.entries(times) as [string, string][]).filter(([k]) => ['Fajr', 'Sunrise', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'].includes(k)).map(([name, time]) => (
           <div key={name} className="glass-ui p-4 md:p-6 rounded-[1.5rem] md:rounded-[2.5rem] flex flex-col items-center hover:shadow-xl transition-all border border-gold/5 bg-white/5 dark:bg-navy-900/40">
              <div className="w-10 h-10 md:w-14 md:h-14 bg-navy-900/50 rounded-xl flex items-center justify-center mb-3">
-                <span className="text-gold font-black text-xs md:text-lg">{name[0]}</span>
+                <span className="text-gold">{prayerIcons[name]}</span>
              </div>
              <div className="text-center">
                 <span className="block text-[7px] md:text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">{name}</span>

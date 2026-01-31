@@ -213,13 +213,19 @@ const AIScholar: React.FC = () => {
 
   if (isLoggingIn) return (
     <div className="flex flex-col h-[calc(100vh-10rem)] items-center justify-center p-6">
-       <div className="glass-premium p-8 md:p-12 rounded-[2.5rem] w-full max-w-sm shadow-2xl border border-gold/20 space-y-8">
+       <div className="glass-premium p-8 md:p-12 rounded-[2.5rem] w-full max-w-sm shadow-2xl border border-gold/20 space-y-6">
           <div className="text-center space-y-4">
-            <LoginIcon className="w-12 h-12 text-gold mx-auto" />
-            <h2 className="text-xl font-black text-navy-950 dark:text-white uppercase tracking-tighter">Enter Sanctuary</h2>
+            <LoginIcon className="w-10 h-10 text-gold mx-auto" />
+            <div className="space-y-1">
+              <h2 className="text-xl font-black text-navy-950 dark:text-white uppercase tracking-tighter">Welcome</h2>
+              <div className="flex flex-col gap-0.5">
+                <p className="arabic-text text-sm text-gold">خوش آمدید / أهلاً بك / پخیر راغلئ</p>
+                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">(Urdu / Arabic / Pashto)</p>
+              </div>
+            </div>
           </div>
           <form onSubmit={handleLogin} className="space-y-4">
-             <input name="username" type="text" placeholder="Your Name" className="w-full py-4 px-6 bg-slate-50 dark:bg-navy-900 rounded-2xl font-bold focus:ring-2 focus:ring-gold outline-none" required />
+             <input name="username" type="text" placeholder="Your Name e.g. Mohsin" className="w-full py-4 px-6 bg-slate-50 dark:bg-navy-900 rounded-2xl font-bold focus:ring-2 focus:ring-gold outline-none text-[10px] md:text-sm" required />
              <button type="submit" className="w-full py-4 bg-gold text-navy-950 font-black rounded-2xl uppercase tracking-widest text-[10px]">ENTER</button>
           </form>
        </div>

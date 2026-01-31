@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { AppTab } from '../types';
-import { BayanLogo, QuranIcon, HadithIcon, SparklesIcon, ToolsIcon, LibraryIcon, MalikLogo } from './Icons';
+import { BayanLogo, QuranIcon, HadithIcon, SparklesIcon, ToolsIcon, LibraryIcon, MalikLogo, CreditCardIcon } from './Icons';
 
 interface LayoutProps {
   activeTab: AppTab;
@@ -36,6 +36,7 @@ const Layout: React.FC<LayoutProps> = ({ activeTab, setActiveTab, goHome, childr
         <div className="flex flex-row md:flex-col items-center gap-1 md:gap-3 flex-1 md:flex-none md:w-full justify-around md:justify-start px-2 md:px-0">
           <button
             onClick={() => setActiveTab(AppTab.QURAN)}
+            title="Holy Quran"
             className={`p-2 md:p-3 rounded-xl transition-all ${activeTab === AppTab.QURAN ? 'bg-gold text-white' : 'text-slate-400'}`}
           >
             <QuranIcon className="w-4 h-4 md:w-5 md:h-5" />
@@ -43,23 +44,34 @@ const Layout: React.FC<LayoutProps> = ({ activeTab, setActiveTab, goHome, childr
 
           <button
             onClick={() => setActiveTab(AppTab.HADITH)}
+            title="Hadith Vault"
             className={`p-2 md:p-3 rounded-xl transition-all ${activeTab === AppTab.HADITH ? 'bg-gold text-white' : 'text-slate-400'}`}
           >
             <HadithIcon className="w-4 h-4 md:w-5 md:h-5" />
           </button>
 
           <button 
-            onClick={() => setActiveTab(AppTab.QURAN_AI)}
-            className={`p-2 md:p-3 rounded-xl transition-all ${activeTab === AppTab.QURAN_AI ? 'bg-gold text-white' : 'text-slate-400'}`}
+            onClick={() => setActiveTab(AppTab.SYSTEMS_DEVELOPMENT)}
+            title="Systems Development AI"
+            className={`p-2 md:p-3 rounded-xl transition-all ${activeTab === AppTab.SYSTEMS_DEVELOPMENT ? 'bg-gold text-white' : 'text-slate-400'}`}
           >
             <SparklesIcon className="w-4 h-4 md:w-5 md:h-5" />
           </button>
           
           <button 
             onClick={() => setActiveTab(AppTab.TOOLS)}
+            title="Islamic Tools"
             className={`p-2 md:p-3 rounded-xl transition-all ${activeTab === AppTab.TOOLS ? 'bg-gold text-white' : 'text-slate-400'}`}
           >
             <ToolsIcon className="w-4 h-4 md:w-5 md:h-5" />
+          </button>
+
+          <button 
+            onClick={() => setActiveTab(AppTab.SADAQAH)}
+            title="Sadaqah & Payments"
+            className={`p-2 md:p-3 rounded-xl transition-all ${activeTab === AppTab.SADAQAH ? 'bg-gold text-white' : 'text-slate-400'}`}
+          >
+            <CreditCardIcon className="w-4 h-4 md:w-5 md:h-5" />
           </button>
 
           <button 
@@ -84,13 +96,15 @@ const Layout: React.FC<LayoutProps> = ({ activeTab, setActiveTab, goHome, childr
               {activeTab === AppTab.QURAN ? 'Holy Quran' : 
                activeTab === AppTab.HADITH ? 'Hadith (حدیث)' :
                activeTab === AppTab.DEVELOPER ? 'SMA' : 
-               activeTab === AppTab.QURAN_AI ? 'AI Assistant' : 'Wisdom'}
+               activeTab === AppTab.ABOUT ? 'Explore' :
+               activeTab === AppTab.SYSTEMS_DEVELOPMENT ? 'Systems Development' : 
+               activeTab === AppTab.SADAQAH ? 'Sadaqah' : 'Explore'}
              </h1>
           </div>
           
           <div className="flex items-center gap-3">
             <button onClick={() => setActiveTab(AppTab.DEVELOPER)} className={`text-[9px] font-black uppercase tracking-[0.2em] ${activeTab === AppTab.DEVELOPER ? 'text-gold' : 'text-slate-500'}`}>SMA</button>
-            <button onClick={() => setActiveTab(AppTab.ABOUT)} className={`text-[9px] font-black uppercase tracking-[0.2em] ${activeTab === AppTab.ABOUT ? 'text-gold' : 'text-slate-500'}`}>About</button>
+            <button onClick={() => setActiveTab(AppTab.ABOUT)} className={`text-[9px] font-black uppercase tracking-[0.2em] ${activeTab === AppTab.ABOUT ? 'text-gold' : 'text-slate-500'}`}>Explore</button>
           </div>
         </header>
 

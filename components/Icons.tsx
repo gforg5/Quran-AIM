@@ -52,6 +52,13 @@ export const InfoIcon: React.FC<IconProps> = ({ className }) => (
   </svg>
 );
 
+// Added AdviceIcon for AdviceHub
+export const AdviceIcon: React.FC<IconProps> = ({ className }) => (
+  <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" className={className} strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
+  </svg>
+);
+
 export const QuranIcon: React.FC<IconProps> = ({ className }) => (
   <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" className={className} strokeWidth={1.2}>
     <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18c-2.305 0-4.408.867-6 2.292m0-14.25v14.25" />
@@ -80,7 +87,7 @@ export const ArrowLeftIcon: React.FC<IconProps> = ({ className }) => (
 
 export const SparklesIcon: React.FC<IconProps> = ({ className }) => (
   <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" className={className} strokeWidth={2}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09-3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z" />
   </svg>
 );
 
@@ -105,6 +112,12 @@ export const ToolsIcon: React.FC<IconProps> = ({ className }) => (
 export const CharityIcon: React.FC<IconProps> = ({ className }) => (
   <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" className={className} strokeWidth={2}>
     <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+  </svg>
+);
+
+export const CreditCardIcon: React.FC<IconProps> = ({ className }) => (
+  <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" className={className} strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
   </svg>
 );
 
@@ -140,8 +153,47 @@ export const SpeakerIcon: React.FC<IconProps> = ({ className }) => (
   </svg>
 );
 
-export const AdviceIcon: React.FC<IconProps> = ({ className }) => (
-  <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" className={className} strokeWidth={2}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 001.5-.189m-1.5.189a6.01 6.01 0 01-1.5-.189m3.75 7.478a12.06 12.06 0 01-4.5 0m3.75 2.383a14.406 14.406 0 01-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 10-7.517 0c.85.493 1.509 1.333 1.509 2.316V18" />
+// Prayer Icons
+export const FajrIcon: React.FC<IconProps> = ({ className }) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className={className} strokeWidth="1.5">
+    <path d="M12 3V5M12 19V21M4.22 4.22L5.64 5.64M18.36 18.36L19.78 19.78M1 12H3M21 12H23M4.22 19.78L5.64 18.36M18.36 5.64L19.78 4.22M12 7A5 5 0 1 0 12 17A5 5 0 1 0 12 7Z" />
+    <path d="M12 13V15" strokeOpacity="0.5" />
+  </svg>
+);
+
+export const DhuhrIcon: React.FC<IconProps> = ({ className }) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className={className} strokeWidth="1.5">
+    <circle cx="12" cy="12" r="5" />
+    <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+  </svg>
+);
+
+export const AsrIcon: React.FC<IconProps> = ({ className }) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className={className} strokeWidth="1.5">
+    <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" strokeOpacity="0.4" />
+    <circle cx="12" cy="12" r="4" strokeWidth="2" />
+  </svg>
+);
+
+export const MaghribIcon: React.FC<IconProps> = ({ className }) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className={className} strokeWidth="1.5">
+    <path d="M12 17.75V19.25M12 4.75V6.25M19.25 12H17.75M6.25 12H4.75" />
+    <path d="M17.126 17.126L16.065 16.065M7.935 7.935L6.874 6.874M17.126 6.874L16.065 7.935M7.935 16.065L6.874 17.126" />
+    <path d="M12 14.5A2.5 2.5 0 1 0 12 9.5A2.5 2.5 0 1 0 12 14.5Z" />
+    <path d="M4 18H20" strokeLinecap="round" />
+  </svg>
+);
+
+export const IshaIcon: React.FC<IconProps> = ({ className }) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className={className} strokeWidth="1.5">
+    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z" />
+  </svg>
+);
+
+export const SunriseIcon: React.FC<IconProps> = ({ className }) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className={className} strokeWidth="1.5">
+    <path d="M12 18V22M5 12H1M23 12H19M7.07 7.07L4.24 4.24M19.76 19.76L16.93 16.93M16.93 7.07L19.76 4.24M4.24 19.76L7.07 16.93" strokeOpacity="0.4" />
+    <path d="M17 12A5 5 0 1 1 7 12" />
+    <path d="M4 18H20" />
   </svg>
 );
