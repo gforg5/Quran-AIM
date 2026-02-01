@@ -28,6 +28,7 @@ const AIScholar: React.FC = () => {
   const [isLiveActive, setIsLiveActive] = useState(false);
   const [liveTranscription, setLiveTranscription] = useState('');
   const [isListening, setIsListening] = useState(false);
+  const [showAccountMenu, setShowAccountMenu] = useState(false);
   
   const scrollRef = useRef<HTMLDivElement>(null);
   const liveSessionRef = useRef<any>(null);
@@ -93,6 +94,25 @@ const AIScholar: React.FC = () => {
     }
   };
 
+  const handleLogout = () => {
+    if (confirm("Disconnect from SMA Sanctuary?")) {
+      localStorage.removeItem('almalik_user');
+      setUserId('');
+      setMessages([]);
+      setIsLoggingIn(true);
+      setShowAccountMenu(false);
+    }
+  };
+
+  const handleClearHistory = () => {
+    if (confirm("Clear current session archives?")) {
+      setMessages([]);
+      localStorage.removeItem(`almalik_history_${userId}`);
+      setInitialMessage();
+      setShowAccountMenu(false);
+    }
+  };
+
   const startVoiceInput = () => {
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRecognition) return alert("Voice input not supported in this browser.");
@@ -105,7 +125,7 @@ const AIScholar: React.FC = () => {
 
   const startLiveVoiceSession = async () => {
     const apiKey = process.env.API_KEY;
-    if (!apiKey) return alert("System Error: API_KEY is missing on Vercel. Please add it to your environment variables and redeploy.");
+    if (!apiKey) return alert("System Error: API_KEY is missing on Vercel.");
 
     setLoading(true);
     await resumeContexts();
@@ -174,7 +194,7 @@ const AIScholar: React.FC = () => {
     if (!textToSend.trim() || loading) return;
     
     if (!process.env.API_KEY) {
-      alert("Missing API_KEY on Vercel. Please configure the Environment Variable.");
+      alert("Missing API_KEY on Vercel.");
       return;
     }
 
@@ -198,7 +218,7 @@ const AIScholar: React.FC = () => {
       setMessages(prev => [...prev, { 
         id: (Date.now() + 2).toString(), 
         role: 'model', 
-        text: `Connection issues. Please check your API_KEY on Vercel and try again. Error: ${err.message}`, 
+        text: `Connection issues. Error: ${err.message}`, 
         timestamp: new Date() 
       }]);
     } finally {
@@ -208,14 +228,15 @@ const AIScholar: React.FC = () => {
 
   if (isLoggingIn) return (
     <div className="flex flex-col h-[calc(100vh-10rem)] items-center justify-center p-6">
-       <div className="glass-premium p-8 md:p-12 rounded-[2.5rem] w-full max-sm shadow-2xl border border-gold/20 space-y-6">
+       <div className="glass-premium p-8 md:p-12 rounded-[2.5rem] w-full max-sm shadow-2xl border border-gold/20 space-y-6 bg-white dark:bg-navy-900/50">
           <div className="text-center space-y-4">
             <LoginIcon className="w-10 h-10 text-gold mx-auto" />
-            <h2 className="text-xl font-black text-navy-950 dark:text-white uppercase tracking-tighter">Welcome</h2>
+            <h2 className="text-xl font-black text-navy-950 dark:text-white uppercase tracking-tighter">Enter SMA Sanctuary</h2>
+            <p className="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Authenticated Web-System Access</p>
           </div>
           <form onSubmit={handleLogin} className="space-y-4">
-             <input name="username" type="text" placeholder="Your Name" className="w-full py-4 px-6 bg-slate-50 dark:bg-navy-900 rounded-2xl font-bold focus:ring-2 focus:ring-gold outline-none" required />
-             <button type="submit" className="w-full py-4 bg-gold text-navy-950 font-black rounded-2xl uppercase tracking-widest text-[10px]">ENTER</button>
+             <input name="username" type="text" placeholder="Your Name" className="w-full py-4 px-6 bg-slate-50 dark:bg-navy-950 rounded-2xl font-bold focus:ring-2 focus:ring-gold outline-none text-sm border border-gold/5" required />
+             <button type="submit" className="w-full py-4 bg-gold text-navy-950 font-black rounded-2xl uppercase tracking-widest text-[10px] shadow-xl hover:scale-[1.02] transition-all">ACCESS SYSTEM</button>
           </form>
        </div>
     </div>
@@ -230,19 +251,48 @@ const AIScholar: React.FC = () => {
   );
 
   return (
-    <div className="flex flex-col h-[calc(100dvh-10rem)] md:h-[calc(100vh-120px)] bg-white dark:bg-navy-900 rounded-[1.5rem] md:rounded-[2.5rem] shadow-2xl border border-gold/10 overflow-hidden">
-      <div className="bg-navy-950 p-3 md:p-4 text-white flex items-center justify-between shrink-0">
-        <div className="flex items-center gap-2">
+    <div className="flex flex-col h-[calc(100dvh-10rem)] md:h-[calc(100vh-120px)] bg-white dark:bg-navy-900 rounded-[1.5rem] md:rounded-[2.5rem] shadow-2xl border border-gold/10 overflow-hidden relative">
+      <div className="bg-navy-950 p-2 md:p-4 text-white flex items-center justify-between shrink-0 z-50 border-b border-gold/10">
+        <div className="flex items-center gap-4">
           <MalikLogo className="w-8 h-8 md:w-10 md:h-10 text-gold" />
-          <span className="font-black text-[8px] md:text-[10px] uppercase tracking-widest truncate max-w-[120px]">{userId}'s Sanctuary</span>
+          <div className="flex flex-col">
+            <div className="flex items-center gap-2">
+              <span className="text-white font-black text-[9px] md:text-[11px] uppercase tracking-tighter">{userId}'s Sanctuary</span>
+              <div className="w-1 h-1 bg-emerald-500 rounded-full animate-pulse"></div>
+            </div>
+            <span className="text-[7px] text-gold uppercase tracking-widest font-black opacity-60">System Online</span>
+          </div>
         </div>
-        <div className="flex gap-2">
-          <button onClick={startLiveVoiceSession} className="p-2.5 bg-white/5 hover:bg-gold hover:text-navy-950 rounded-lg transition-all border border-white/5"><SpeakerIcon className="w-4 h-4" /></button>
-          <button onClick={() => { setMessages([]); localStorage.removeItem(`almalik_history_${userId}`); setInitialMessage(); }} className="p-2.5 bg-white/5 hover:bg-red-500 rounded-lg transition-all border border-white/5"><UndoIcon className="w-4 h-4" /></button>
+        
+        <div className="flex gap-1.5 md:gap-3">
+          <button 
+            onClick={() => setShowAccountMenu(!showAccountMenu)}
+            className="hidden sm:flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 rounded-xl transition-all border border-white/5"
+          >
+             <span className="text-[9px] font-black uppercase tracking-widest">Account</span>
+             <svg className={`w-3 h-3 transition-transform ${showAccountMenu ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" /></svg>
+          </button>
+          <button onClick={startLiveVoiceSession} title="Live Voice" className="p-2.5 bg-white/5 hover:bg-gold hover:text-navy-950 rounded-lg transition-all border border-white/5"><SpeakerIcon className="w-4 h-4" /></button>
+          
+          <div className="relative">
+            <button 
+              onClick={() => setShowAccountMenu(!showAccountMenu)}
+              className="sm:hidden p-2.5 bg-white/5 rounded-lg border border-white/5"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37a1.724 1.724 0 002.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+            </button>
+            {showAccountMenu && (
+              <div className="absolute top-full right-0 mt-2 w-48 bg-navy-900 border border-gold/20 rounded-xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 z-[60]">
+                <button onClick={() => { setIsLoggingIn(true); setShowAccountMenu(false); }} className="w-full text-left px-4 py-3 text-[9px] font-black uppercase tracking-widest hover:bg-gold hover:text-navy-950 transition-colors border-b border-gold/10">Change Name</button>
+                <button onClick={handleClearHistory} className="w-full text-left px-4 py-3 text-[9px] font-black uppercase tracking-widest hover:bg-gold hover:text-navy-950 transition-colors border-b border-gold/10">Clear Archives</button>
+                <button onClick={handleLogout} className="w-full text-left px-4 py-3 text-[9px] font-black uppercase tracking-widest hover:bg-red-500 hover:text-white transition-colors">Disconnect</button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-6 md:space-y-8 custom-scrollbar">
+      <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-6 md:space-y-8 custom-scrollbar bg-slate-50/10 dark:bg-transparent">
         {messages.map((m) => (
           <div key={m.id} className={`flex flex-col ${m.role === 'user' ? 'items-end' : 'items-start'} animate-in fade-in`}>
             <div className={`max-w-[85%] md:max-w-[75%] p-4 md:p-6 rounded-3xl ${m.role === 'user' ? 'bg-gold text-navy-950 shadow-lg' : 'bg-white dark:bg-navy-800 text-slate-700 dark:text-slate-100 border border-gold/10'}`}>
@@ -262,8 +312,8 @@ const AIScholar: React.FC = () => {
 
       <div className="p-4 md:p-6 bg-white dark:bg-navy-900 border-t border-gold/10">
         <div className="flex items-end gap-3 max-w-4xl mx-auto">
-          <div className="flex-1 bg-slate-100 dark:bg-navy-800 rounded-[2rem] p-2 flex items-center">
-            <textarea rows={1} value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }} placeholder="Ask the Scholar..." className="flex-1 py-3 px-6 bg-transparent border-none outline-none font-medium text-sm md:text-base resize-none max-h-40" />
+          <div className="flex-1 bg-slate-100 dark:bg-navy-800 rounded-[2rem] p-2 flex items-center shadow-inner">
+            <textarea rows={1} value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }} placeholder="Consult the AI Scholar..." className="flex-1 py-3 px-6 bg-transparent border-none outline-none font-medium text-sm md:text-base resize-none max-h-40" />
             <button onClick={startVoiceInput} className={`p-3 rounded-full transition-all ${isListening ? 'bg-red-500 text-white animate-pulse' : 'text-slate-400 hover:text-gold'}`}><MicIcon className="w-5 h-5" /></button>
           </div>
           <button onClick={() => handleSend()} disabled={!input.trim() || loading} className="p-4 bg-gold text-navy-950 rounded-full shadow-2xl hover:scale-105 active:scale-95 transition-all disabled:opacity-30"><SparklesIcon className="w-6 h-6" /></button>

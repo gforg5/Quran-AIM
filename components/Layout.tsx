@@ -92,25 +92,28 @@ const Layout: React.FC<LayoutProps> = ({ activeTab, setActiveTab, goHome, showDa
 
       <main className="flex-1 flex flex-col h-[100dvh] overflow-hidden">
         <header className="h-14 flex items-center justify-between px-4 md:px-6 border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-navy-950/80 backdrop-blur-md shrink-0 z-40">
-          <div className="flex items-center gap-2 overflow-hidden">
-             <span className="text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] text-gold cursor-pointer" onClick={goHome}>AL-MALIK</span>
-             <div className="w-1 h-1 bg-slate-300 dark:bg-slate-700 rounded-full"></div>
-             <h1 className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 truncate">
-              {showDashboard ? 'Sovereign Wisdom' : (
-                activeTab === AppTab.QURAN ? 'Holy Quran' : 
-                activeTab === AppTab.HADITH ? 'Hadith (حدیث)' :
-                activeTab === AppTab.DEVELOPER ? 'SMA' : 
-                activeTab === AppTab.ABOUT ? 'About' :
-                activeTab === AppTab.SYSTEMS_DEVELOPMENT ? 'Systems Development' : 
-                activeTab === AppTab.SADAQAH ? 'Sadaqah' : 
-                activeTab === AppTab.TOOLS ? 'Explore' : 'About'
-              )}
-             </h1>
+          <div className="flex items-center gap-2 overflow-hidden mr-2 max-w-[60%]">
+             <span className="text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] text-gold cursor-pointer shrink-0" onClick={goHome}>AL-MALIK</span>
+             {!showDashboard && (
+               <>
+                 <div className="w-1 h-1 bg-slate-300 dark:bg-slate-700 rounded-full shrink-0"></div>
+                 <h1 className="text-[5.5px] md:text-[8px] font-bold uppercase tracking-[0.05em] text-slate-400 truncate">
+                  {activeTab === AppTab.QURAN ? 'Holy Quran' : 
+                    activeTab === AppTab.HADITH ? 'Hadith (حدیث)' :
+                    activeTab === AppTab.DEVELOPER ? 'SMA' : 
+                    activeTab === AppTab.ABOUT ? 'About' :
+                    activeTab === AppTab.SYSTEMS_DEVELOPMENT ? 'Systems Development' : 
+                    activeTab === AppTab.SADAQAH ? 'Sadaqah' : 
+                    activeTab === AppTab.TOOLS ? 'Explore' : 'About'
+                  }
+                 </h1>
+               </>
+             )}
           </div>
           
-          <div className="flex items-center gap-3">
-            <button onClick={() => setActiveTab(AppTab.DEVELOPER)} className={`text-[9px] font-black uppercase tracking-[0.2em] ${activeTab === AppTab.DEVELOPER && !showDashboard ? 'text-gold' : 'text-slate-500'}`}>SMA</button>
-            <button onClick={() => setActiveTab(AppTab.ABOUT)} className={`text-[9px] font-black uppercase tracking-[0.2em] ${activeTab === AppTab.ABOUT && !showDashboard ? 'text-gold' : 'text-slate-500'}`}>About</button>
+          <div className="flex items-center gap-3 shrink-0">
+            <button onClick={() => setActiveTab(AppTab.DEVELOPER)} className={`text-[8.5px] font-black uppercase tracking-[0.1em] transition-colors ${activeTab === AppTab.DEVELOPER && !showDashboard ? 'text-gold' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}>SMA</button>
+            <button onClick={() => setActiveTab(AppTab.ABOUT)} className={`text-[8.5px] font-black uppercase tracking-[0.1em] transition-colors ${activeTab === AppTab.ABOUT && !showDashboard ? 'text-gold' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}>About</button>
           </div>
         </header>
 

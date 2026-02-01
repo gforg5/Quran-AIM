@@ -1,14 +1,54 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { CreditCardIcon, MalikLogo } from './Icons';
 
+interface PaymentMethod {
+  name: string;
+  icon: string;
+  color: string;
+  detailsLabel: string;
+  placeholder: string;
+}
+
 const Sadaqah: React.FC = () => {
-  const paymentMethods = [
-    { name: 'EasyPaisa', icon: '💸', color: 'bg-green-500' },
-    { name: 'JazzCash', icon: '📱', color: 'bg-red-600' },
-    { name: 'Credit/Debit Card', icon: '💳', color: 'bg-blue-600' },
-    { name: 'Bank Transfer', icon: '🏦', color: 'bg-slate-700' },
+  const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(null);
+  const [amount, setAmount] = useState('');
+  const [accountInfo, setAccountInfo] = useState('');
+  const [reference, setReference] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [receipt, setReceipt] = useState<{ id: string; date: string; amount: string; method: string } | null>(null);
+
+  const paymentMethods: PaymentMethod[] = [
+    { name: 'EasyPaisa', icon: '💸', color: 'bg-green-500', detailsLabel: 'Mobile Number', placeholder: '03XX-XXXXXXX' },
+    { name: 'JazzCash', icon: '📱', color: 'bg-red-600', detailsLabel: 'Mobile Number', placeholder: '03XX-XXXXXXX' },
+    { name: 'Credit/Debit Card', icon: '💳', color: 'bg-blue-600', detailsLabel: 'Card Number', placeholder: 'XXXX XXXX XXXX XXXX' },
+    { name: 'Bank Transfer', icon: '🏦', color: 'bg-slate-700', detailsLabel: 'IBAN / Account', placeholder: 'PKXX XXXX ...' },
   ];
+
+  const handleProcessPayment = (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsProcessing(true);
+    
+    // Simulate real functional processing
+    setTimeout(() => {
+      const newReceipt = {
+        id: `ALM-${Math.floor(10000 + Math.random() * 90000)}`,
+        date: new Date().toLocaleString(),
+        amount: amount,
+        method: selectedMethod?.name || 'N/A'
+      };
+      setIsProcessing(false);
+      setReceipt(newReceipt);
+    }, 2000);
+  };
+
+  const resetAll = () => {
+    setReceipt(null);
+    setSelectedMethod(null);
+    setAmount('');
+    setAccountInfo('');
+    setReference('');
+  };
 
   const features = [
     { en: 'Global Dawah Support', ur: 'عالمی دعوت سپورٹ' },
@@ -63,6 +103,7 @@ const Sadaqah: React.FC = () => {
             {paymentMethods.map(method => (
               <button 
                 key={method.name}
+                onClick={() => setSelectedMethod(method)}
                 className="w-full flex items-center justify-between p-6 bg-white dark:bg-navy-900 border border-gold/5 rounded-[1.5rem] hover:border-gold/30 hover:shadow-xl transition-all group"
               >
                 <div className="flex items-center gap-4">
@@ -77,6 +118,103 @@ const Sadaqah: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Payment/Receipt Modal */}
+      {(selectedMethod || receipt) && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-navy-950/90 backdrop-blur-xl animate-in fade-in">
+          <div className="max-w-md w-full bg-white dark:bg-navy-900 rounded-[2.5rem] overflow-hidden shadow-3xl border border-gold/20 relative">
+            {receipt ? (
+              <div className="p-8 md:p-12 text-center space-y-6 animate-in zoom-in">
+                 <div className="w-16 h-16 bg-emerald-500 rounded-full flex items-center justify-center mx-auto shadow-2xl animate-bounce">
+                    <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                 </div>
+                 <div className="space-y-2">
+                    <h3 className="text-2xl font-black text-navy-950 dark:text-white uppercase tracking-tighter">Transaction Success</h3>
+                    <p className="text-[9px] font-black text-gold uppercase tracking-[0.2em]">Official Digital Receipt</p>
+                 </div>
+
+                 <div className="bg-slate-50 dark:bg-navy-950 p-6 rounded-3xl border border-gold/5 text-left space-y-4">
+                    <div className="flex justify-between border-b border-gold/5 pb-2">
+                      <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Reference No.</span>
+                      <span className="text-[10px] font-black text-navy-950 dark:text-white">{receipt.id}</span>
+                    </div>
+                    <div className="flex justify-between border-b border-gold/5 pb-2">
+                      <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Date / Time</span>
+                      <span className="text-[10px] font-black text-navy-950 dark:text-white">{receipt.date}</span>
+                    </div>
+                    <div className="flex justify-between border-b border-gold/5 pb-2">
+                      <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Method</span>
+                      <span className="text-[10px] font-black text-navy-950 dark:text-white">{receipt.method}</span>
+                    </div>
+                    <div className="flex justify-between pt-2">
+                      <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Amount Paid</span>
+                      <span className="text-lg font-black text-gold">PKR {receipt.amount}</span>
+                    </div>
+                 </div>
+
+                 <button onClick={resetAll} className="w-full py-4 bg-gold text-navy-950 font-black rounded-2xl uppercase tracking-widest text-[9px] shadow-xl hover:scale-[1.02] transition-all">Close Receipt</button>
+                 <p className="text-[8px] text-slate-400 font-bold uppercase tracking-widest">JazakAllah Khair for your support.</p>
+              </div>
+            ) : (
+              selectedMethod && (
+                <>
+                  <div className="bg-gold p-6 text-navy-950 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">{selectedMethod.icon}</span>
+                      <h3 className="font-black uppercase tracking-widest text-xs">Donate via {selectedMethod.name}</h3>
+                    </div>
+                    <button onClick={() => setSelectedMethod(null)} className="p-2 hover:bg-black/10 rounded-lg transition-colors">
+                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                  </div>
+                  <form onSubmit={handleProcessPayment} className="p-8 space-y-6">
+                    <div className="space-y-2 text-left">
+                      <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-2">Donation Amount (PKR)</label>
+                      <input 
+                        type="number" 
+                        required
+                        value={amount}
+                        onChange={(e) => setAmount(e.target.value)}
+                        placeholder="e.g. 5000" 
+                        className="w-full py-4 px-6 bg-slate-50 dark:bg-navy-950 rounded-2xl font-black text-lg outline-none border border-gold/5 focus:border-gold/30 transition-all shadow-inner"
+                      />
+                    </div>
+                    <div className="space-y-2 text-left">
+                      <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-2">{selectedMethod.detailsLabel}</label>
+                      <input 
+                        type="text" 
+                        required
+                        value={accountInfo}
+                        onChange={(e) => setAccountInfo(e.target.value)}
+                        placeholder={selectedMethod.placeholder}
+                        className="w-full py-4 px-6 bg-slate-50 dark:bg-navy-950 rounded-2xl font-black text-sm outline-none border border-gold/5 focus:border-gold/30 transition-all shadow-inner"
+                      />
+                    </div>
+                    <div className="space-y-2 text-left">
+                      <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-2">Purpose / Note (Optional)</label>
+                      <input 
+                        type="text" 
+                        value={reference}
+                        onChange={(e) => setReference(e.target.value)}
+                        placeholder="e.g. Sadaqah Jariyah"
+                        className="w-full py-4 px-6 bg-slate-50 dark:bg-navy-950 rounded-2xl font-black text-[10px] outline-none border border-gold/5 focus:border-gold/30 transition-all shadow-inner"
+                      />
+                    </div>
+                    <button 
+                      type="submit" 
+                      disabled={isProcessing}
+                      className="w-full py-5 bg-navy-950 dark:bg-gold text-white dark:text-navy-950 font-black rounded-2xl uppercase tracking-widest text-[10px] shadow-2xl hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50"
+                    >
+                      {isProcessing ? 'Validating Connection...' : 'Confirm Transaction'}
+                    </button>
+                    <p className="text-[8px] text-slate-400 font-bold uppercase tracking-widest text-center">Secure Al-Malik Payment Gateway Simulation</p>
+                  </form>
+                </>
+              )
+            )}
+          </div>
+        </div>
+      )}
 
       <div className="p-8 md:p-12 glass-premium rounded-[2.5rem] border border-gold/20 bg-emerald-950 text-white shadow-3xl space-y-6">
          <div className="space-y-4">
