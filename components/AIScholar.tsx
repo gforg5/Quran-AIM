@@ -57,7 +57,7 @@ const AIScholar: React.FC = () => {
     setMessages([{ 
       id: 'initial', 
       role: 'model', 
-      text: `Assalamu Alaikum ${userId}. I am your Al-Malik AI Scholar. How may I serve you today?`, 
+      text: `Assalamu Alaikum ${userId}. I am your Al-Malik AI Scholar. How may I assist you today?`, 
       timestamp: new Date() 
     }]);
   };
@@ -95,7 +95,7 @@ const AIScholar: React.FC = () => {
 
   const startVoiceInput = () => {
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SpeechRecognition) return alert("Browser does not support voice input.");
+    if (!SpeechRecognition) return alert("Voice input not supported in this browser.");
     const recognition = new SpeechRecognition();
     recognition.onstart = () => setIsListening(true);
     recognition.onend = () => setIsListening(false);
@@ -105,7 +105,7 @@ const AIScholar: React.FC = () => {
 
   const startLiveVoiceSession = async () => {
     const apiKey = process.env.API_KEY;
-    if (!apiKey) return alert("API Key missing. Please check Vercel deployment settings.");
+    if (!apiKey) return alert("System Error: API_KEY is missing on Vercel. Please add it to your environment variables and redeploy.");
 
     setLoading(true);
     await resumeContexts();
@@ -121,7 +121,7 @@ const AIScholar: React.FC = () => {
         model: 'gemini-2.5-flash-native-audio-preview-12-2025',
         callbacks: {
           onopen: () => {
-            setLiveTranscription('Listening to your wisdom...');
+            setLiveTranscription('Listening...');
             const source = inputAudioContextRef.current!.createMediaStreamSource(stream);
             const scriptProcessor = inputAudioContextRef.current!.createScriptProcessor(4096, 1, 1);
             scriptProcessor.onaudioprocess = (e) => {
@@ -156,7 +156,7 @@ const AIScholar: React.FC = () => {
         config: {
           responseModalities: [Modality.AUDIO],
           speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Fenrir' } } },
-          systemInstruction: "You are Al-Malik Voice Assistant. Concise, professional Islamic male scholar voice.",
+          systemInstruction: "You are Al-Malik Voice Assistant. Professional Islamic male scholar voice.",
           outputAudioTranscription: {}
         }
       });
@@ -173,6 +173,11 @@ const AIScholar: React.FC = () => {
     const textToSend = overrideInput || input;
     if (!textToSend.trim() || loading) return;
     
+    if (!process.env.API_KEY) {
+      alert("Missing API_KEY on Vercel. Please configure the Environment Variable.");
+      return;
+    }
+
     const newUserMsg = { id: Date.now().toString(), role: 'user' as const, text: textToSend, timestamp: new Date() };
     const updatedHistory = [...messages, newUserMsg];
     
@@ -185,7 +190,7 @@ const AIScholar: React.FC = () => {
       setMessages(prev => [...prev, { 
         id: (Date.now() + 1).toString(),
         role: 'model', 
-        text: response.text || "No response received.", 
+        text: response.text || "I apologize, no response was generated.", 
         timestamp: new Date(), 
         groundingUrls: response.urls 
       }]);
@@ -193,7 +198,7 @@ const AIScholar: React.FC = () => {
       setMessages(prev => [...prev, { 
         id: (Date.now() + 2).toString(), 
         role: 'model', 
-        text: `Connectivity Alert: ${err.message || "Please check your API Key on Vercel and redeploy."}`, 
+        text: `Connection issues. Please check your API_KEY on Vercel and try again. Error: ${err.message}`, 
         timestamp: new Date() 
       }]);
     } finally {
@@ -207,7 +212,6 @@ const AIScholar: React.FC = () => {
           <div className="text-center space-y-4">
             <LoginIcon className="w-10 h-10 text-gold mx-auto" />
             <h2 className="text-xl font-black text-navy-950 dark:text-white uppercase tracking-tighter">Welcome</h2>
-            <p className="arabic-text text-sm text-gold">خوش آمدید / أهلاً بك / پخیر راغلئ</p>
           </div>
           <form onSubmit={handleLogin} className="space-y-4">
              <input name="username" type="text" placeholder="Your Name" className="w-full py-4 px-6 bg-slate-50 dark:bg-navy-900 rounded-2xl font-bold focus:ring-2 focus:ring-gold outline-none" required />
@@ -220,12 +224,8 @@ const AIScholar: React.FC = () => {
   if (isVoiceMode) return (
     <div className="fixed inset-0 z-[100] bg-navy-950 flex flex-col items-center justify-center p-6 text-center">
       <button onClick={() => { liveSessionRef.current?.close(); setIsVoiceMode(false); }} className="absolute top-8 left-8 p-3 text-white bg-white/5 rounded-xl"><ArrowLeftIcon className="w-5 h-5" /></button>
-      <div className="relative mb-12">
-        <div className={`w-40 h-40 md:w-64 md:h-64 rounded-full border border-gold/20 flex items-center justify-center ${isLiveActive ? 'animate-pulse' : ''}`}>
-          <MalikLogo className="w-16 md:w-24 text-gold" />
-        </div>
-      </div>
-      <p className="text-white text-lg italic px-4 font-black tracking-widest uppercase">{liveTranscription || "CONNECTING..."}</p>
+      <MalikLogo className="w-16 md:w-24 text-gold mb-12 animate-pulse" />
+      <p className="text-white text-lg italic uppercase tracking-widest">{liveTranscription || "CONNECTING..."}</p>
     </div>
   );
 
@@ -237,33 +237,23 @@ const AIScholar: React.FC = () => {
           <span className="font-black text-[8px] md:text-[10px] uppercase tracking-widest truncate max-w-[120px]">{userId}'s Sanctuary</span>
         </div>
         <div className="flex gap-2">
-          <button onClick={startLiveVoiceSession} title="Live Voice" className="p-2 md:p-2.5 bg-white/5 hover:bg-gold hover:text-navy-950 rounded-lg transition-all border border-white/5">
-             <SpeakerIcon className="w-4 h-4" />
-          </button>
-          <button onClick={() => { setMessages([]); localStorage.removeItem(`almalik_history_${userId}`); setInitialMessage(); }} title="Clear Chat" className="p-2 md:p-2.5 bg-white/5 hover:bg-red-500 rounded-lg transition-all border border-white/5">
-            <UndoIcon className="w-4 h-4" />
-          </button>
+          <button onClick={startLiveVoiceSession} className="p-2.5 bg-white/5 hover:bg-gold hover:text-navy-950 rounded-lg transition-all border border-white/5"><SpeakerIcon className="w-4 h-4" /></button>
+          <button onClick={() => { setMessages([]); localStorage.removeItem(`almalik_history_${userId}`); setInitialMessage(); }} className="p-2.5 bg-white/5 hover:bg-red-500 rounded-lg transition-all border border-white/5"><UndoIcon className="w-4 h-4" /></button>
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-6 md:space-y-8 custom-scrollbar bg-slate-50/20 dark:bg-navy-950/20">
+      <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-6 md:space-y-8 custom-scrollbar">
         {messages.map((m) => (
           <div key={m.id} className={`flex flex-col ${m.role === 'user' ? 'items-end' : 'items-start'} animate-in fade-in`}>
-            <div className={`max-w-[85%] md:max-w-[75%] p-4 md:p-6 rounded-3xl ${m.role === 'user' ? 'bg-gold text-navy-950 shadow-lg rounded-tr-none' : 'bg-white dark:bg-navy-800 text-slate-700 dark:text-slate-100 shadow-md rounded-tl-none border border-gold/10'}`}>
+            <div className={`max-w-[85%] md:max-w-[75%] p-4 md:p-6 rounded-3xl ${m.role === 'user' ? 'bg-gold text-navy-950 shadow-lg' : 'bg-white dark:bg-navy-800 text-slate-700 dark:text-slate-100 border border-gold/10'}`}>
               <div className="text-sm md:text-base leading-relaxed whitespace-pre-wrap">{m.text}</div>
-              
-              <div className="mt-4 pt-4 border-t border-navy-950/5 dark:border-white/5 flex gap-3">
-                <button onClick={() => navigator.clipboard.writeText(m.text)} className="p-1.5 opacity-40 hover:opacity-100"><CopyIcon className="w-3.5 h-3.5" /></button>
-                <button onClick={() => navigator.share?.({ title: 'Al-Malik Wisdom', text: m.text })} className="p-1.5 opacity-40 hover:opacity-100"><ShareIcon className="w-3.5 h-3.5" /></button>
-              </div>
-
               {m.groundingUrls && m.groundingUrls.length > 0 && (
                 <div className="mt-3 flex flex-wrap gap-2">
-                  {m.groundingUrls.map((u, i) => <a key={i} href={u.uri} target="_blank" className="text-[8px] px-2 py-1 bg-gold/10 text-gold rounded-full border border-gold/20 truncate max-w-[150px]">{u.title}</a>)}
+                  {m.groundingUrls.map((u, i) => <a key={i} href={u.uri} target="_blank" className="text-[8px] px-2 py-1 bg-gold/10 text-gold rounded-full border border-gold/20">{u.title}</a>)}
                 </div>
               )}
             </div>
-            <span className="text-[8px] font-black text-slate-400 dark:text-slate-600 mt-2 uppercase tracking-widest">{m.role === 'user' ? userId : 'Al-Malik Scholar'}</span>
+            <span className="text-[8px] font-black text-slate-400 mt-2 uppercase tracking-widest">{m.role === 'user' ? userId : 'Al-Malik Scholar'}</span>
           </div>
         ))}
         {loading && <div className="flex gap-2 p-2"><div className="w-1.5 h-1.5 bg-gold rounded-full animate-bounce"></div><div className="w-1.5 h-1.5 bg-gold rounded-full animate-bounce delay-100"></div><div className="w-1.5 h-1.5 bg-gold rounded-full animate-bounce delay-200"></div></div>}
@@ -271,30 +261,12 @@ const AIScholar: React.FC = () => {
       </div>
 
       <div className="p-4 md:p-6 bg-white dark:bg-navy-900 border-t border-gold/10">
-        <div className="flex items-end gap-3 max-w-4xl mx-auto relative">
-          <div className="flex-1 bg-slate-100 dark:bg-navy-800 rounded-[2rem] p-2 flex items-center border border-gold/5 focus-within:border-gold transition-all">
-            <textarea 
-              rows={1}
-              value={input} 
-              onChange={(e) => setInput(e.target.value)} 
-              onKeyDown={(e) => { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }} 
-              placeholder="Ask the Scholar..." 
-              className="flex-1 py-3 px-6 bg-transparent border-none outline-none font-medium text-sm md:text-base resize-none max-h-40" 
-            />
-            <button 
-              onClick={startVoiceInput} 
-              className={`p-3 rounded-full transition-all ${isListening ? 'bg-red-500 text-white animate-pulse' : 'text-slate-400 hover:text-gold'}`}
-            >
-              <MicIcon className="w-5 h-5" />
-            </button>
+        <div className="flex items-end gap-3 max-w-4xl mx-auto">
+          <div className="flex-1 bg-slate-100 dark:bg-navy-800 rounded-[2rem] p-2 flex items-center">
+            <textarea rows={1} value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }} placeholder="Ask the Scholar..." className="flex-1 py-3 px-6 bg-transparent border-none outline-none font-medium text-sm md:text-base resize-none max-h-40" />
+            <button onClick={startVoiceInput} className={`p-3 rounded-full transition-all ${isListening ? 'bg-red-500 text-white animate-pulse' : 'text-slate-400 hover:text-gold'}`}><MicIcon className="w-5 h-5" /></button>
           </div>
-          <button 
-            onClick={() => handleSend()} 
-            disabled={!input.trim() || loading}
-            className="p-4 bg-gold text-navy-950 rounded-full shadow-2xl hover:scale-105 disabled:opacity-30"
-          >
-            <SparklesIcon className="w-6 h-6" />
-          </button>
+          <button onClick={() => handleSend()} disabled={!input.trim() || loading} className="p-4 bg-gold text-navy-950 rounded-full shadow-2xl hover:scale-105 active:scale-95 transition-all disabled:opacity-30"><SparklesIcon className="w-6 h-6" /></button>
         </div>
       </div>
     </div>

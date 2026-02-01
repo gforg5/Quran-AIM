@@ -29,22 +29,25 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab, onAudioStateChange,
   };
 
   const handleVoicePlay = async (text: string, lang: 'en' | 'ur', id: string, title: string, subtitle: string) => {
-    // Resume context on first user interaction (critical for mobile/web production)
-    if (!audioContextRef.current) {
-      audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
-    }
-    const ctx = audioContextRef.current;
-    if (ctx.state === 'suspended') await ctx.resume();
-
+    // 1. Check if we should just stop
     if (activeAudio?.id === id || voiceLoading === id) {
       stopAudio();
       return;
     }
 
+    // 2. Stop any existing playback
     stopAudio();
     setVoiceLoading(id);
 
     try {
+      // 3. Initialize/Resume Audio Context (Required on click for production)
+      if (!audioContextRef.current) {
+        audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
+      }
+      const ctx = audioContextRef.current;
+      if (ctx.state === 'suspended') await ctx.resume();
+
+      // 4. Fetch Audio
       const base64 = await speakGuidance(text, lang === 'ur');
       const audioBytes = decodeAudio(base64);
       const audioBuffer = await decodeAudioData(audioBytes, ctx, 24000, 1);
@@ -66,7 +69,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab, onAudioStateChange,
       source.start();
     } catch (err: any) {
       console.error("Dashboard Voice Error:", err);
-      alert(`Voice failed: ${err.message}. Ensure API_KEY is set on Vercel.`);
+      alert(err.message || "Failed to play voice. Please ensure API_KEY is set in Vercel.");
       setVoiceLoading(null);
       onAudioStateChange(null);
     }
