@@ -1,16 +1,17 @@
 
 import React, { useState, useEffect } from 'react';
 import { AppTab } from '../types';
-import { BayanLogo, QuranIcon, HadithIcon, SparklesIcon, ToolsIcon, LibraryIcon, MalikLogo, CreditCardIcon } from './Icons';
+import { BayanLogo, QuranIcon, HadithIcon, SparklesIcon, ToolsIcon, MalikLogo, CreditCardIcon } from './Icons';
 
 interface LayoutProps {
   activeTab: AppTab;
   setActiveTab: (tab: AppTab) => void;
   goHome: () => void;
+  showDashboard: boolean;
   children: React.ReactNode;
 }
 
-const Layout: React.FC<LayoutProps> = ({ activeTab, setActiveTab, goHome, children }) => {
+const Layout: React.FC<LayoutProps> = ({ activeTab, setActiveTab, goHome, showDashboard, children }) => {
   const [isDark, setIsDark] = useState(true);
 
   useEffect(() => {
@@ -21,6 +22,8 @@ const Layout: React.FC<LayoutProps> = ({ activeTab, setActiveTab, goHome, childr
     }
   }, [isDark]);
 
+  const isTabActive = (tab: AppTab) => !showDashboard && activeTab === tab;
+
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-white dark:bg-navy-950 transition-colors duration-500 overflow-hidden">
       {/* Sidebar Navigation */}
@@ -28,7 +31,7 @@ const Layout: React.FC<LayoutProps> = ({ activeTab, setActiveTab, goHome, childr
         
         <div className="flex md:flex-col items-center justify-center md:mb-8">
           <BayanLogo 
-            className="w-8 h-8 md:w-10 md:h-10 text-gold hover:scale-105 transition-all cursor-pointer" 
+            className={`w-8 h-8 md:w-10 md:h-10 hover:scale-105 transition-all cursor-pointer ${showDashboard ? 'text-gold' : 'text-slate-400'}`} 
             onClick={goHome} 
           />
         </div>
@@ -37,7 +40,7 @@ const Layout: React.FC<LayoutProps> = ({ activeTab, setActiveTab, goHome, childr
           <button
             onClick={() => setActiveTab(AppTab.QURAN)}
             title="Holy Quran"
-            className={`p-2 md:p-3 rounded-xl transition-all ${activeTab === AppTab.QURAN ? 'bg-gold text-white' : 'text-slate-400'}`}
+            className={`p-2 md:p-3 rounded-xl transition-all ${isTabActive(AppTab.QURAN) ? 'bg-gold text-white' : 'text-slate-400 hover:text-gold'}`}
           >
             <QuranIcon className="w-4 h-4 md:w-5 md:h-5" />
           </button>
@@ -45,7 +48,7 @@ const Layout: React.FC<LayoutProps> = ({ activeTab, setActiveTab, goHome, childr
           <button
             onClick={() => setActiveTab(AppTab.HADITH)}
             title="Hadith Vault"
-            className={`p-2 md:p-3 rounded-xl transition-all ${activeTab === AppTab.HADITH ? 'bg-gold text-white' : 'text-slate-400'}`}
+            className={`p-2 md:p-3 rounded-xl transition-all ${isTabActive(AppTab.HADITH) ? 'bg-gold text-white' : 'text-slate-400 hover:text-gold'}`}
           >
             <HadithIcon className="w-4 h-4 md:w-5 md:h-5" />
           </button>
@@ -53,7 +56,7 @@ const Layout: React.FC<LayoutProps> = ({ activeTab, setActiveTab, goHome, childr
           <button 
             onClick={() => setActiveTab(AppTab.SYSTEMS_DEVELOPMENT)}
             title="Systems Development AI"
-            className={`p-2 md:p-3 rounded-xl transition-all ${activeTab === AppTab.SYSTEMS_DEVELOPMENT ? 'bg-gold text-white' : 'text-slate-400'}`}
+            className={`p-2 md:p-3 rounded-xl transition-all ${isTabActive(AppTab.SYSTEMS_DEVELOPMENT) ? 'bg-gold text-white' : 'text-slate-400 hover:text-gold'}`}
           >
             <SparklesIcon className="w-4 h-4 md:w-5 md:h-5" />
           </button>
@@ -61,7 +64,7 @@ const Layout: React.FC<LayoutProps> = ({ activeTab, setActiveTab, goHome, childr
           <button 
             onClick={() => setActiveTab(AppTab.TOOLS)}
             title="Explore"
-            className={`p-2 md:p-3 rounded-xl transition-all ${activeTab === AppTab.TOOLS ? 'bg-gold text-white' : 'text-slate-400'}`}
+            className={`p-2 md:p-3 rounded-xl transition-all ${isTabActive(AppTab.TOOLS) ? 'bg-gold text-white' : 'text-slate-400 hover:text-gold'}`}
           >
             <ToolsIcon className="w-4 h-4 md:w-5 md:h-5" />
           </button>
@@ -69,7 +72,7 @@ const Layout: React.FC<LayoutProps> = ({ activeTab, setActiveTab, goHome, childr
           <button 
             onClick={() => setActiveTab(AppTab.SADAQAH)}
             title="Sadaqah & Payments"
-            className={`p-2 md:p-3 rounded-xl transition-all ${activeTab === AppTab.SADAQAH ? 'bg-gold text-white' : 'text-slate-400'}`}
+            className={`p-2 md:p-3 rounded-xl transition-all ${isTabActive(AppTab.SADAQAH) ? 'bg-gold text-white' : 'text-slate-400 hover:text-gold'}`}
           >
             <CreditCardIcon className="w-4 h-4 md:w-5 md:h-5" />
           </button>
@@ -93,19 +96,21 @@ const Layout: React.FC<LayoutProps> = ({ activeTab, setActiveTab, goHome, childr
              <span className="text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] text-gold cursor-pointer" onClick={goHome}>AL-MALIK</span>
              <div className="w-1 h-1 bg-slate-300 dark:bg-slate-700 rounded-full"></div>
              <h1 className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 truncate">
-              {activeTab === AppTab.QURAN ? 'Holy Quran' : 
-               activeTab === AppTab.HADITH ? 'Hadith (حدیث)' :
-               activeTab === AppTab.DEVELOPER ? 'SMA' : 
-               activeTab === AppTab.ABOUT ? 'About' :
-               activeTab === AppTab.SYSTEMS_DEVELOPMENT ? 'Systems Development' : 
-               activeTab === AppTab.SADAQAH ? 'Sadaqah' : 
-               activeTab === AppTab.TOOLS ? 'Explore' : 'About'}
+              {showDashboard ? 'Sovereign Wisdom' : (
+                activeTab === AppTab.QURAN ? 'Holy Quran' : 
+                activeTab === AppTab.HADITH ? 'Hadith (حدیث)' :
+                activeTab === AppTab.DEVELOPER ? 'SMA' : 
+                activeTab === AppTab.ABOUT ? 'About' :
+                activeTab === AppTab.SYSTEMS_DEVELOPMENT ? 'Systems Development' : 
+                activeTab === AppTab.SADAQAH ? 'Sadaqah' : 
+                activeTab === AppTab.TOOLS ? 'Explore' : 'About'
+              )}
              </h1>
           </div>
           
           <div className="flex items-center gap-3">
-            <button onClick={() => setActiveTab(AppTab.DEVELOPER)} className={`text-[9px] font-black uppercase tracking-[0.2em] ${activeTab === AppTab.DEVELOPER ? 'text-gold' : 'text-slate-500'}`}>SMA</button>
-            <button onClick={() => setActiveTab(AppTab.ABOUT)} className={`text-[9px] font-black uppercase tracking-[0.2em] ${activeTab === AppTab.ABOUT ? 'text-gold' : 'text-slate-500'}`}>About</button>
+            <button onClick={() => setActiveTab(AppTab.DEVELOPER)} className={`text-[9px] font-black uppercase tracking-[0.2em] ${activeTab === AppTab.DEVELOPER && !showDashboard ? 'text-gold' : 'text-slate-500'}`}>SMA</button>
+            <button onClick={() => setActiveTab(AppTab.ABOUT)} className={`text-[9px] font-black uppercase tracking-[0.2em] ${activeTab === AppTab.ABOUT && !showDashboard ? 'text-gold' : 'text-slate-500'}`}>About</button>
           </div>
         </header>
 

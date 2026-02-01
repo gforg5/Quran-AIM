@@ -41,7 +41,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <Layout activeTab={activeTab} setActiveTab={handleTabChange} goHome={() => setShowDashboard(true)}>
+    <Layout activeTab={activeTab} setActiveTab={handleTabChange} goHome={() => setShowDashboard(true)} showDashboard={showDashboard}>
       {renderContent()}
     </Layout>
   );

@@ -29,25 +29,22 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab, onAudioStateChange,
   };
 
   const handleVoicePlay = async (text: string, lang: 'en' | 'ur', id: string, title: string, subtitle: string) => {
-    // 1. Check if we should just stop
+    // Resume context on first user interaction (critical for mobile/web production)
+    if (!audioContextRef.current) {
+      audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
+    }
+    const ctx = audioContextRef.current;
+    if (ctx.state === 'suspended') await ctx.resume();
+
     if (activeAudio?.id === id || voiceLoading === id) {
       stopAudio();
       return;
     }
 
-    // 2. Stop any existing playback
     stopAudio();
     setVoiceLoading(id);
 
     try {
-      // 3. Initialize/Resume Audio Context (Required on click for production)
-      if (!audioContextRef.current) {
-        audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
-      }
-      const ctx = audioContextRef.current;
-      if (ctx.state === 'suspended') await ctx.resume();
-
-      // 4. Fetch Audio
       const base64 = await speakGuidance(text, lang === 'ur');
       const audioBytes = decodeAudio(base64);
       const audioBuffer = await decodeAudioData(audioBytes, ctx, 24000, 1);
@@ -69,7 +66,12 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab, onAudioStateChange,
       source.start();
     } catch (err: any) {
       console.error("Dashboard Voice Error:", err);
-      alert(err.message || "Failed to play voice. Please ensure API_KEY is set in Vercel.");
+      // Detailed error for Quota Exceeded
+      if (err.message?.includes('429') || err.message?.includes('quota')) {
+        alert("Gemini API Error: Quota Exceeded (429). Please check your billing/limits at ai.google.dev.");
+      } else {
+        alert(err.message || "Failed to play voice. Please ensure API_KEY is set in Vercel.");
+      }
       setVoiceLoading(null);
       onAudioStateChange(null);
     }
@@ -100,6 +102,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab, onAudioStateChange,
           id: 'h-daily',
           collection: 'Sahih Bukhari',
           hadithNumber: '1',
+          hadithArabic: "إِنَّمَا الأَعْمَالُ بِالنِّيَّاتِ، وَإِنَّمَا لِكُلِّ امْرِئٍ مَا نَوَى",
           text: "Actions are but by intentions, and every man shall have only that which he intended.",
           urduText: "اعمال کا دارومدار نیتوں پر ہے اور ہر انسان کے لیے وہی ہے جس کی اس نے نیت کی۔",
           source: "Sahih Bukhari",
@@ -161,17 +164,17 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab, onAudioStateChange,
         </div>
       </section>
 
-      <section className="grid lg:grid-cols-2 gap-6 md:gap-8">
-        <div className="bg-emerald-950 rounded-[2rem] md:rounded-[4rem] p-8 md:p-12 text-white shadow-2xl relative overflow-hidden flex flex-col justify-center border-l-4 md:border-l-[12px] border-gold min-h-[500px]">
+      <section className="grid lg:grid-cols-2 gap-6 md:gap-8 items-stretch">
+        <div className="bg-emerald-950 rounded-[2rem] md:rounded-[4rem] p-8 md:p-12 text-white shadow-2xl relative overflow-hidden flex flex-col justify-center border-l-4 md:border-l-[12px] border-gold min-h-[450px] lg:min-h-[550px]">
            <div className="relative z-10 space-y-6 text-center">
               <span className="px-3 py-1 bg-gold/20 border border-gold/40 rounded-full text-gold text-[7px] md:text-[9px] font-black tracking-widest uppercase">Daily Verse</span>
               {ayah && (
                 <>
-                  <p className="arabic-text text-3xl md:text-4xl leading-relaxed text-gradient-gold">{ayah.text}</p>
+                  <p className="arabic-text text-3xl md:text-4xl lg:text-5xl leading-relaxed text-gradient-gold">{ayah.text}</p>
                   <div className="pt-6 border-t border-white/10 space-y-6">
-                     <div className="space-y-2">
-                        <p className="text-gold/90 font-bold text-sm md:text-lg italic px-4">"{ayah.translation}"</p>
-                        <p className="arabic-text text-lg md:text-2xl text-emerald-100 font-bold px-4">{ayah.urduTranslation}</p>
+                     <div className="space-y-4">
+                        <p className="text-gold/90 font-bold text-sm md:text-lg lg:text-xl italic px-4">"{ayah.translation}"</p>
+                        <p className="arabic-text text-lg md:text-2xl lg:text-3xl text-emerald-100 font-bold px-4">{ayah.urduTranslation}</p>
                      </div>
                      <div className="flex justify-center gap-4">
                         <button onClick={() => handleVoicePlay(ayah.translation!, 'en', 'ayah-en', ayah.surah?.englishName || 'Ayah', `Verse ${ayah.numberInSurah}`)} className={`flex items-center gap-2 px-6 py-3 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${activeAudio?.id === 'ayah-en' ? 'bg-gold text-navy-950' : voiceLoading === 'ayah-en' ? 'bg-white/5 text-gold animate-pulse' : 'bg-white/5 text-gold hover:bg-gold hover:text-navy-950'}`}>
@@ -187,20 +190,25 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab, onAudioStateChange,
            </div>
         </div>
 
-        <div className="bg-white dark:bg-navy-900 rounded-[2rem] md:rounded-[4rem] p-8 md:p-12 shadow-2xl border border-gold/10 flex flex-col justify-center min-h-[500px]">
+        <div className="bg-white dark:bg-navy-900 rounded-[2rem] md:rounded-[4rem] p-8 md:p-12 shadow-2xl border border-gold/10 flex flex-col justify-center min-h-[450px] lg:min-h-[550px]">
            <div className="relative z-10 space-y-8 text-center">
               <span className="px-3 py-1 bg-emerald-100 dark:bg-navy-800 border border-emerald-200 dark:border-navy-700 rounded-full text-emerald-700 dark:text-emerald-400 text-[7px] md:text-[9px] font-black tracking-widest uppercase">Daily Hadith</span>
               {hadith && (
                 <div className="space-y-6">
-                  <p className="text-xl md:text-3xl font-black text-navy-950 dark:text-white leading-tight italic playfair">"{hadith.text}"</p>
-                  <p className="arabic-text text-lg md:text-3xl font-bold text-emerald-700 dark:text-emerald-400 leading-relaxed">{hadith.urduText}</p>
-                  <div className="flex justify-center gap-4">
-                    <button onClick={() => handleVoicePlay(hadith.text, 'en', 'hadith-en', 'Hadith', 'Sahih Bukhari')} className={`flex items-center gap-2 px-6 py-3 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${activeAudio?.id === 'hadith-en' ? 'bg-gold text-navy-950' : voiceLoading === 'hadith-en' ? 'bg-slate-100 dark:bg-navy-800 text-gold animate-pulse' : 'bg-slate-100 dark:bg-navy-800 text-slate-400 hover:text-gold'}`}>
-                      <SpeakerIcon className="w-4 h-4" /> {voiceLoading === 'hadith-en' ? 'Connecting...' : activeAudio?.id === 'hadith-en' ? 'Stop' : 'English'}
-                    </button>
-                    <button onClick={() => handleVoicePlay(hadith.urduText!, 'ur', 'hadith-ur', 'حدیث', 'صحیح بخاری')} className={`flex items-center gap-2 px-6 py-3 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${activeAudio?.id === 'hadith-ur' ? 'bg-gold text-navy-950' : voiceLoading === 'hadith-ur' ? 'bg-slate-100 dark:bg-navy-800 text-gold animate-pulse' : 'bg-slate-100 dark:bg-navy-800 text-slate-400 hover:text-gold'}`}>
-                      <SpeakerIcon className="w-4 h-4" /> {voiceLoading === 'hadith-ur' ? 'Connecting...' : activeAudio?.id === 'hadith-ur' ? 'Stop' : 'Urdu'}
-                    </button>
+                  <p className="arabic-text text-2xl md:text-3xl lg:text-4xl font-bold text-gold leading-relaxed">{hadith.hadithArabic}</p>
+                  <div className="pt-6 border-t border-slate-100 dark:border-slate-800 space-y-6">
+                    <div className="space-y-4">
+                      <p className="text-xl md:text-2xl font-black text-navy-950 dark:text-white leading-tight italic playfair">"{hadith.text}"</p>
+                      <p className="arabic-text text-lg md:text-2xl font-bold text-emerald-700 dark:text-emerald-400 leading-relaxed">{hadith.urduText}</p>
+                    </div>
+                    <div className="flex justify-center gap-4">
+                      <button onClick={() => handleVoicePlay(hadith.text, 'en', 'hadith-en', 'Hadith', 'Sahih Bukhari')} className={`flex items-center gap-2 px-6 py-3 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${activeAudio?.id === 'hadith-en' ? 'bg-gold text-navy-950' : voiceLoading === 'hadith-en' ? 'bg-slate-100 dark:bg-navy-800 text-gold animate-pulse' : 'bg-slate-100 dark:bg-navy-800 text-slate-400 hover:text-gold'}`}>
+                        <SpeakerIcon className="w-4 h-4" /> {voiceLoading === 'hadith-en' ? 'Connecting...' : activeAudio?.id === 'hadith-en' ? 'Stop' : 'English'}
+                      </button>
+                      <button onClick={() => handleVoicePlay(hadith.urduText!, 'ur', 'hadith-ur', 'حدیث', 'صحیح بخاری')} className={`flex items-center gap-2 px-6 py-3 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${activeAudio?.id === 'hadith-ur' ? 'bg-gold text-navy-950' : voiceLoading === 'hadith-ur' ? 'bg-slate-100 dark:bg-navy-800 text-gold animate-pulse' : 'bg-slate-100 dark:bg-navy-800 text-slate-400 hover:text-gold'}`}>
+                        <SpeakerIcon className="w-4 h-4" /> {voiceLoading === 'hadith-ur' ? 'Connecting...' : activeAudio?.id === 'hadith-ur' ? 'Stop' : 'Urdu'}
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}
