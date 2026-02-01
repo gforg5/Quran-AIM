@@ -29,7 +29,6 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab, onAudioStateChange,
   };
 
   const handleVoicePlay = async (text: string, lang: 'en' | 'ur', id: string, title: string, subtitle: string) => {
-    // Resume context on first user interaction (critical for mobile/web production)
     if (!audioContextRef.current) {
       audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
     }
@@ -66,7 +65,6 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab, onAudioStateChange,
       source.start();
     } catch (err: any) {
       console.error("Dashboard Voice Error:", err);
-      // Detailed error for Quota Exceeded
       if (err.message?.includes('429') || err.message?.includes('quota')) {
         alert("Gemini API Error: Quota Exceeded (429). Please check your billing/limits at ai.google.dev.");
       } else {
@@ -165,7 +163,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab, onAudioStateChange,
       </section>
 
       <section className="grid lg:grid-cols-2 gap-6 md:gap-8 items-stretch">
-        <div className="bg-emerald-950 rounded-[2rem] md:rounded-[4rem] p-8 md:p-12 text-white shadow-2xl relative overflow-hidden flex flex-col justify-center border-l-4 md:border-l-[12px] border-gold min-h-[450px] lg:min-h-[550px]">
+        <div className="bg-emerald-950 rounded-[2rem] md:rounded-[4rem] p-8 md:p-12 md:pt-16 text-white shadow-2xl relative overflow-hidden flex flex-col justify-start border-l-4 md:border-l-[12px] border-gold min-h-[450px] lg:min-h-[550px]">
            <div className="relative z-10 space-y-6 text-center">
               <span className="px-3 py-1 bg-gold/20 border border-gold/40 rounded-full text-gold text-[7px] md:text-[9px] font-black tracking-widest uppercase">Daily Verse</span>
               {ayah && (
@@ -190,7 +188,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab, onAudioStateChange,
            </div>
         </div>
 
-        <div className="bg-white dark:bg-navy-900 rounded-[2rem] md:rounded-[4rem] p-8 md:p-12 shadow-2xl border border-gold/10 flex flex-col justify-center min-h-[450px] lg:min-h-[550px]">
+        <div className="bg-white dark:bg-navy-900 rounded-[2rem] md:rounded-[4rem] p-8 md:p-12 md:pt-16 shadow-2xl border border-gold/10 flex flex-col justify-start min-h-[450px] lg:min-h-[550px]">
            <div className="relative z-10 space-y-8 text-center">
               <span className="px-3 py-1 bg-emerald-100 dark:bg-navy-800 border border-emerald-200 dark:border-navy-700 rounded-full text-emerald-700 dark:text-emerald-400 text-[7px] md:text-[9px] font-black tracking-widest uppercase">Daily Hadith</span>
               {hadith && (

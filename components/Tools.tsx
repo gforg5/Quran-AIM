@@ -7,9 +7,19 @@ const Tools: React.FC = () => {
   const [tasbih, setTasbih] = useState(0);
   const [goal, setGoal] = useState(33);
   
-  const [zakatAssets, setZakatAssets] = useState({ 
-    cash: 0, gold: 0, silver: 0, business: 0, investments: 0, liabilities: 0 
-  });
+  // Zakat State - Accurate
+  const [goldWeight, setGoldWeight] = useState(0);
+  const [goldUnit, setGoldUnit] = useState<'tola' | 'gram'>('tola');
+  const [goldPrice, setGoldPrice] = useState(0); // Price per tola/gram
+
+  const [silverWeight, setSilverWeight] = useState(0);
+  const [silverUnit, setSilverUnit] = useState<'tola' | 'gram'>('tola');
+  const [silverPrice, setSilverPrice] = useState(0);
+
+  const [cashAssets, setCashAssets] = useState(0);
+  const [businessAssets, setBusinessAssets] = useState(0);
+  const [liabilities, setLiabilities] = useState(0);
+  
   const [showZakatResult, setShowZakatResult] = useState(false);
 
   const [heading, setHeading] = useState(0);
@@ -26,22 +36,51 @@ const Tools: React.FC = () => {
     }
   }, [activeTool]);
 
-  const calculateZakat = () => {
-    const total = zakatAssets.cash + zakatAssets.gold + zakatAssets.silver + zakatAssets.business + zakatAssets.investments;
-    const net = Math.max(0, total - zakatAssets.liabilities);
-    return (net * 0.025).toLocaleString(undefined, { minimumFractionDigits: 2 });
-  };
+  const calculateZakatInfo = () => {
+    // Convert weights to Tolas for logic checking
+    const goldInTola = goldUnit === 'tola' ? goldWeight : goldWeight / 11.66;
+    const silverInTola = silverUnit === 'tola' ? silverWeight : silverWeight / 11.66;
 
-  const getLabelSimple = (key: string) => {
-    switch(key) {
-      case 'cash': return 'Money / Cash (نقدی)';
-      case 'gold': return 'Gold Value (سونا)';
-      case 'silver': return 'Silver Value (چاندی)';
-      case 'business': return 'Business Goods (تجارت)';
-      case 'investments': return 'Investments (انویسٹمنٹ)';
-      case 'liabilities': return 'Money Owed (قرض)';
-      default: return key.toUpperCase();
+    const goldValue = goldWeight * goldPrice;
+    const silverValue = silverWeight * silverPrice;
+    
+    const totalWealth = goldValue + silverValue + cashAssets + businessAssets;
+    const netWealth = Math.max(0, totalWealth - liabilities);
+
+    // Nisab Thresholds
+    const nisabGoldTola = 7.5;
+    const nisabSilverTola = 52.5;
+
+    // Is Zakat Due logic
+    let isDue = false;
+    let reason = "";
+
+    if (goldInTola >= nisabGoldTola) {
+      isDue = true;
+      reason = "Gold reaches the 7.5 Tola Nisab threshold.";
+    } else if (silverInTola >= nisabSilverTola) {
+      isDue = true;
+      reason = "Silver reaches the 52.5 Tola Nisab threshold.";
+    } else {
+      // If none individually, check combined value against silver nisab (standard scholarly practice)
+      const currentSilverNisabValue = nisabSilverTola * (silverUnit === 'tola' ? silverPrice : silverPrice * 11.66);
+      if (netWealth >= currentSilverNisabValue) {
+        isDue = true;
+        reason = "Combined assets exceed the Silver Nisab threshold.";
+      } else {
+        isDue = false;
+        reason = "Threshold not reached. No Zakat is due on these assets.";
+      }
     }
+
+    const amountDue = isDue ? netWealth * 0.025 : 0;
+
+    return {
+      amountDue: amountDue.toLocaleString(undefined, { minimumFractionDigits: 2 }),
+      isDue,
+      reason,
+      netWealth: netWealth.toLocaleString()
+    };
   };
 
   return (
@@ -62,7 +101,7 @@ const Tools: React.FC = () => {
                   : 'text-slate-400 dark:text-emerald-500/50 hover:text-gold'
               }`}
             >
-              <span className="w-full text-center">{tab === 'tasbeeh' ? 'Tasbeeh' : tab === 'qibla' ? 'Qibla' : 'Charity'}</span>
+              <span className="w-full text-center">{tab === 'tasbeeh' ? 'Tasbeeh' : tab === 'qibla' ? 'Qibla' : 'Zakat'}</span>
             </button>
           ))}
         </div>
@@ -121,50 +160,110 @@ const Tools: React.FC = () => {
       )}
 
       {activeTool === 'zakat' && (
-        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 animate-in slide-in-from-bottom duration-700 items-start max-w-5xl mx-auto">
-           <div className="glass-premium rounded-[2rem] md:rounded-[3rem] p-6 md:p-8 shadow-2xl border-2 border-gold/20 bg-white dark:bg-navy-900/40 w-full mx-auto">
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 animate-in slide-in-from-bottom duration-700 items-start max-w-7xl mx-auto">
+           <div className="glass-premium rounded-[2rem] md:rounded-[3rem] p-6 md:p-8 shadow-2xl border-2 border-gold/20 bg-white dark:bg-navy-900/40 w-full">
               <div className="flex items-center gap-4 md:gap-6 mb-6 md:mb-8">
                  <div className="w-12 h-12 md:w-16 md:h-16 bg-emerald-950 rounded-xl flex items-center justify-center shadow-2xl border border-gold/20">
                     <CharityIcon className="w-6 h-6 md:w-8 md:h-8 text-gold" />
                  </div>
-                 <h3 className="text-xl md:text-2xl font-black text-emerald-950 dark:text-white playfair italic">Calculate Charity <br/><span className="text-gold font-sans not-italic text-sm md:text-lg uppercase tracking-widest">(زکوٰۃ کیلکولیٹر)</span></h3>
+                 <div>
+                    <h3 className="text-xl md:text-2xl font-black text-emerald-950 dark:text-white playfair italic">Zakat Calculator</h3>
+                    <p className="text-[10px] font-black text-gold uppercase tracking-widest">Calculated per Islamic Nisab Rules</p>
+                 </div>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                 {Object.keys(zakatAssets).map((key) => (
-                    <div key={key} className="space-y-1 md:space-y-2">
-                       <label className="text-[8px] md:text-[9px] font-black text-slate-400 dark:text-gold uppercase tracking-widest ml-1">
-                         {getLabelSimple(key)}
-                       </label>
-                       <input 
-                         type="number"
-                         value={zakatAssets[key as keyof typeof zakatAssets]}
-                         onChange={(e) => setZakatAssets({...zakatAssets, [key]: parseFloat(e.target.value) || 0})}
-                         className="w-full bg-slate-50 dark:bg-navy-800 border-none rounded-xl md:rounded-2xl py-3 md:py-4 px-4 md:px-6 text-emerald-950 dark:text-white font-black text-lg focus:ring-4 focus:ring-gold/20 outline-none transition-all shadow-inner"
-                       />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
+                 {/* Gold Section */}
+                 <div className="space-y-3 p-4 bg-gold/5 rounded-3xl border border-gold/10">
+                    <div className="flex justify-between items-center">
+                      <label className="text-[9px] font-black text-gold uppercase tracking-widest">Gold Weight (سونا)</label>
+                      <select value={goldUnit} onChange={(e) => setGoldUnit(e.target.value as any)} className="bg-transparent text-[8px] font-black text-slate-400 border border-gold/20 rounded px-1 outline-none">
+                        <option value="tola">Tola</option>
+                        <option value="gram">Grams</option>
+                      </select>
                     </div>
-                 ))}
+                    <input type="number" value={goldWeight || ''} onChange={(e) => setGoldWeight(parseFloat(e.target.value) || 0)} placeholder="Total Weight" className="w-full bg-white dark:bg-navy-800 rounded-xl py-3 px-4 font-black text-sm outline-none shadow-inner" />
+                    <input type="number" value={goldPrice || ''} onChange={(e) => setGoldPrice(parseFloat(e.target.value) || 0)} placeholder={`Price per ${goldUnit}`} className="w-full bg-white dark:bg-navy-800 rounded-xl py-3 px-4 font-black text-xs outline-none shadow-inner" />
+                 </div>
+
+                 {/* Silver Section */}
+                 <div className="space-y-3 p-4 bg-slate-50 dark:bg-navy-800/20 rounded-3xl border border-slate-100 dark:border-slate-800">
+                    <div className="flex justify-between items-center">
+                      <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Silver Weight (چاندی)</label>
+                      <select value={silverUnit} onChange={(e) => setSilverUnit(e.target.value as any)} className="bg-transparent text-[8px] font-black text-slate-400 border border-slate-200 rounded px-1 outline-none">
+                        <option value="tola">Tola</option>
+                        <option value="gram">Grams</option>
+                      </select>
+                    </div>
+                    <input type="number" value={silverWeight || ''} onChange={(e) => setSilverWeight(parseFloat(e.target.value) || 0)} placeholder="Total Weight" className="w-full bg-white dark:bg-navy-800 rounded-xl py-3 px-4 font-black text-sm outline-none shadow-inner" />
+                    <input type="number" value={silverPrice || ''} onChange={(e) => setSilverPrice(parseFloat(e.target.value) || 0)} placeholder={`Price per ${silverUnit}`} className="w-full bg-white dark:bg-navy-800 rounded-xl py-3 px-4 font-black text-xs outline-none shadow-inner" />
+                 </div>
+
+                 <div className="space-y-3">
+                    <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Cash & Savings (نقدی)</label>
+                    <input type="number" value={cashAssets || ''} onChange={(e) => setCashAssets(parseFloat(e.target.value) || 0)} placeholder="Cash in Bank/Home" className="w-full bg-white dark:bg-navy-800 rounded-xl py-3 px-4 font-black text-sm outline-none shadow-inner border border-slate-100 dark:border-transparent" />
+                 </div>
+
+                 <div className="space-y-3">
+                    <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Business Goods (تجارت)</label>
+                    <input type="number" value={businessAssets || ''} onChange={(e) => setBusinessAssets(parseFloat(e.target.value) || 0)} placeholder="Value of Stock" className="w-full bg-white dark:bg-navy-800 rounded-xl py-3 px-4 font-black text-sm outline-none shadow-inner border border-slate-100 dark:border-transparent" />
+                 </div>
+
+                 <div className="space-y-3 md:col-span-2">
+                    <label className="text-[9px] font-black text-red-400 uppercase tracking-widest ml-1">Liabilities / Debts (قرض)</label>
+                    <input type="number" value={liabilities || ''} onChange={(e) => setLiabilities(parseFloat(e.target.value) || 0)} placeholder="Amount You Owe" className="w-full bg-red-50 dark:bg-red-950/20 rounded-xl py-3 px-4 font-black text-sm outline-none shadow-inner border border-red-100 dark:border-red-900/50" />
+                 </div>
               </div>
 
               {showZakatResult ? (
-                 <div className="mt-8 p-6 md:p-8 bg-emerald-950 text-white rounded-[2rem] border-2 border-gold shadow-2xl animate-in zoom-in-95 text-center overflow-hidden">
-                    <span className="text-[8px] md:text-[10px] font-black text-gold uppercase tracking-[0.4em] mb-2 block">Total Charity to Give</span>
-                    <p className="text-3xl md:text-5xl font-black mb-6 md:mb-8 tracking-tighter text-gradient-gold break-all leading-tight">Rs. {calculateZakat()}</p>
-                    <button onClick={() => setShowZakatResult(false)} className="px-8 py-4 bg-gold text-emerald-950 font-black rounded-xl uppercase tracking-widest text-[9px] shadow-xl">Start Over</button>
+                 <div className="mt-8 p-6 md:p-10 bg-emerald-950 text-white rounded-[2rem] border-2 border-gold shadow-2xl animate-in zoom-in-95 text-center relative overflow-hidden">
+                    <div className="relative z-10">
+                      <span className="text-[9px] font-black text-gold uppercase tracking-[0.4em] mb-2 block">Sovereign Calculation Results</span>
+                      <div className="space-y-1 mb-6">
+                        <p className="text-3xl md:text-5xl font-black tracking-tighter text-gradient-gold break-all leading-tight">
+                          {calculateZakatInfo().isDue ? `Rs. ${calculateZakatInfo().amountDue}` : 'Rs. 0.00'}
+                        </p>
+                        <p className="text-[10px] font-bold text-emerald-300">Net Wealth: Rs. {calculateZakatInfo().netWealth}</p>
+                      </div>
+                      
+                      <div className={`mb-8 p-4 rounded-2xl text-[10px] font-bold leading-relaxed border ${calculateZakatInfo().isDue ? 'bg-emerald-900/50 border-emerald-500/30' : 'bg-red-900/20 border-red-500/20'}`}>
+                         <p className={calculateZakatInfo().isDue ? 'text-emerald-400' : 'text-red-400'}>{calculateZakatInfo().reason}</p>
+                      </div>
+
+                      <button onClick={() => setShowZakatResult(false)} className="px-10 py-4 bg-gold text-emerald-950 font-black rounded-xl uppercase tracking-widest text-[9px] shadow-xl hover:scale-105 transition-all">Recalculate</button>
+                    </div>
+                    <div className="absolute top-0 right-0 p-10 opacity-5 pointer-events-none">
+                       <CharityIcon className="w-40 h-40" />
+                    </div>
                  </div>
               ) : (
-                 <button onClick={() => setShowZakatResult(true)} className="w-full mt-8 py-4 md:py-6 bg-emerald-950 dark:bg-gold text-white dark:text-emerald-950 font-black rounded-2xl shadow-2xl hover:scale-[1.02] transition-all uppercase tracking-widest text-[9px] border border-gold/30">
-                   Calculate Now (PKR)
+                 <button onClick={() => setShowZakatResult(true)} className="w-full mt-10 py-5 bg-emerald-950 dark:bg-gold text-white dark:text-emerald-950 font-black rounded-2xl shadow-2xl hover:scale-[1.02] transition-all uppercase tracking-widest text-[10px] border border-gold/30">
+                   Analyze Zakat Liability
                  </button>
               )}
            </div>
 
-           <div className="py-4 md:py-8 space-y-6 md:space-y-10 max-w-md mx-auto text-center md:text-left">
-              <div className="space-y-4 md:space-y-6">
-                 <h4 className="text-3xl md:text-5xl font-black text-emerald-950 dark:text-white tracking-tighter leading-none italic playfair">Give <br/><span className="text-gradient-gold">Charity Simply</span></h4>
-                 <p className="text-slate-500 dark:text-emerald-200/60 text-base md:text-xl leading-relaxed font-medium">
-                   Zakat is one of the pillars of Islam. Use this tool to calculate your share in PKR.
-                 </p>
+           <div className="space-y-8 lg:pt-10">
+              <div className="space-y-6">
+                 <h4 className="text-3xl md:text-5xl font-black text-emerald-950 dark:text-white tracking-tighter leading-none italic playfair">The Law of <br/><span className="text-gradient-gold">Zakat (زکوٰۃ)</span></h4>
+                 <div className="space-y-4">
+                    <p className="text-slate-600 dark:text-emerald-100 text-sm md:text-lg leading-relaxed font-medium">
+                      Zakat is calculated at <span className="text-gold font-black">2.5%</span> of your total net wealth after subtracting liabilities.
+                    </p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                       <div className="p-5 bg-white dark:bg-navy-900/50 rounded-2xl border border-gold/10">
+                          <p className="text-[10px] font-black text-gold uppercase tracking-widest mb-1">Gold Nisab</p>
+                          <p className="text-xs font-bold text-slate-500 dark:text-slate-300">7.5 Tola (87.48 Grams)</p>
+                       </div>
+                       <div className="p-5 bg-white dark:bg-navy-900/50 rounded-2xl border border-gold/10">
+                          <p className="text-[10px] font-black text-gold uppercase tracking-widest mb-1">Silver Nisab</p>
+                          <p className="text-xs font-bold text-slate-500 dark:text-slate-300">52.5 Tola (612.36 Grams)</p>
+                       </div>
+                    </div>
+                    <p className="text-slate-500 dark:text-emerald-400/60 text-[10px] md:text-xs leading-relaxed italic border-l-2 border-gold/30 pl-4">
+                      Note: If you possess only gold (no cash or silver), the Gold Nisab applies. If you have mixed assets, the lower (Silver) Nisab is usually used to determine liability.
+                    </p>
+                 </div>
               </div>
            </div>
         </div>
