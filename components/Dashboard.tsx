@@ -102,7 +102,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab, onAudioStateChange,
           hadithNumber: '1',
           hadithArabic: "إِنَّمَا الأَعْمَالُ بِالنِّيَّاتِ، وَإِنَّمَا لِكُلِّ امْرِئٍ مَا نَوَى",
           text: "Actions are but by intentions, and every man shall have only that which he intended.",
-          urduText: "اعمال کا دارومدار نیتوں پر ہے اور ہر انسان کے لیے وہی ہے جس کی اس نے نیت کی۔",
+          urduText: "اعمال کا دارومدار نیتوں پر ہے اور ہر انسان کے لیے وہی hai جس کی اس نے نیت کی۔",
           source: "Sahih Bukhari",
           narrator: "Umar ibn al-Khattab"
         });
@@ -124,7 +124,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab, onAudioStateChange,
   if (loading) return (
     <div className="flex flex-col items-center justify-center min-h-[70vh] gap-6">
       <MalikLogo className="w-16 h-16 text-gold animate-sacred-glow" />
-      <p className="text-gold font-black uppercase tracking-[0.4em] text-[8px] animate-pulse">AL-MALIK SOVEREIGN</p>
+      <p className="text-gold font-black uppercase tracking-[0.4em] text-[8px] animate-pulse">AL-MALIK WEB</p>
     </div>
   );
 

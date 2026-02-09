@@ -195,7 +195,7 @@ const QuranExplorer: React.FC<QuranExplorerProps> = ({ onAudioStateChange, activ
     return (
       <div className="flex flex-col items-center justify-center h-[50vh] gap-6">
         <BayanLogo className="w-16 h-16 animate-sacred-glow text-gold" />
-        <p className="text-[10px] font-black uppercase tracking-[0.5em] text-slate-500">Connecting...</p>
+        <p className="text-[8px] font-black uppercase tracking-[0.5em] text-gold animate-pulse">AL-MALIK WEB</p>
       </div>
     );
   }

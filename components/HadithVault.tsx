@@ -97,7 +97,12 @@ const HadithVault: React.FC<HadithVaultProps> = ({ onAudioStateChange, activeAud
     return matchesSearch && matchesCollection;
   });
 
-  if (loading) return <div className="flex flex-col items-center justify-center h-[50vh] gap-6 opacity-30"><BayanLogo className="w-16 h-16 animate-pulse text-gold" /><p className="text-[10px] font-black uppercase tracking-[0.5em] text-slate-500">Connecting...</p></div>;
+  if (loading) return (
+    <div className="flex flex-col items-center justify-center h-[50vh] gap-6">
+      <BayanLogo className="w-16 h-16 animate-pulse text-gold" />
+      <p className="text-[8px] font-black uppercase tracking-[0.5em] text-gold animate-pulse">AL-MALIK WEB</p>
+    </div>
+  );
 
   return (
     <div className="max-w-6xl mx-auto space-y-10 animate-in fade-in duration-700 pb-20 px-2">
