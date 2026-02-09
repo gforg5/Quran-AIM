@@ -91,20 +91,30 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab, onAudioStateChange,
         const pData = await pRes.json();
         setTimes(pData.data.timings);
 
-        // Fetch Random Ayah (Randomized on every refresh/load)
-        const randomAyahId = Math.floor(Math.random() * 6236) + 1;
-        const aRes = await fetch(`https://api.alquran.cloud/v1/ayah/${randomAyahId}/editions/quran-uthmani,en.sahih,ur.jalandhry`);
-        const aData = await aRes.json();
-        setAyah({
-          number: aData.data[0].number,
-          text: aData.data[0].text,
-          translation: aData.data[1].text,
-          urduTranslation: aData.data[2].text,
-          numberInSurah: aData.data[0].numberInSurah,
-          surah: aData.data[0].surah
-        });
+        // Fetch Random Short Ayah (Randomized on every refresh/load)
+        let foundShortAyah = false;
+        let ayahAttempts = 0;
+        while (!foundShortAyah && ayahAttempts < 10) {
+          const randomAyahId = Math.floor(Math.random() * 6236) + 1;
+          const aRes = await fetch(`https://api.alquran.cloud/v1/ayah/${randomAyahId}/editions/quran-uthmani,en.sahih,ur.jalandhry`);
+          const aData = await aRes.json();
+          const ayahData = aData.data[0];
+          // Filter for reasonably short verses (< 180 chars)
+          if (ayahData.text.length < 180 || ayahAttempts === 9) {
+            setAyah({
+              number: ayahData.number,
+              text: ayahData.text,
+              translation: aData.data[1].text,
+              urduTranslation: aData.data[2].text,
+              numberInSurah: ayahData.numberInSurah,
+              surah: ayahData.surah
+            });
+            foundShortAyah = true;
+          }
+          ayahAttempts++;
+        }
 
-        // Expanded Hadith list for random selection on every refresh
+        // Expanded Hadith list for random selection on every refresh (keeping them short)
         const hadithPool: Hadith[] = [
           { 
             id: 'h-1', 
@@ -127,13 +137,23 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab, onAudioStateChange,
             source: "Sahih Bukhari" 
           },
           { 
-            id: 'h-3', 
+            id: 'h-4', 
+            collection: 'Sahih Muslim', 
+            hadithNumber: '223', 
+            hadithArabic: "الطُّهُورُ شَطْرُ الإِيمَانِ", 
+            text: "Cleanliness is half of faith.", 
+            urduText: "صفائی نصف ایمان ہے۔", 
+            narrator: "Abu Malik Al-Ash'ari", 
+            source: "Sahih Muslim" 
+          },
+          { 
+            id: 'h-5', 
             collection: 'Sahih Bukhari', 
-            hadithNumber: '33', 
-            hadithArabic: "آيَةُ الْمُنَافِقِ ثَلَاثٌ: إِذَا حَدَّثَ كَذَبَ، وَإِذَا وَعَدَ أَخْلَفَ، وَإِذَا اؤْتُمِنَ خَانَ", 
-            text: "The signs of a hypocrite are three: Whenever he speaks, he tells a lie; whenever he promises, he breaks it; and whenever he is entrusted, he betrays.", 
-            urduText: "منافق کی تین نشانیاں ہیں: جب بات کرے تو جھوٹ بولے، جب وعدہ کرے تو اس کی خلاف ورزی کرے، اور جب اسے امانت دی جائے تو خیانت کرے۔", 
-            narrator: "Abu Huraira", 
+            hadithNumber: '3', 
+            hadithArabic: "خَيْرُكُمْ مَنْ تَعَلَّمَ الْقُرْآنَ وَعَلَّمَهُ", 
+            text: "The best among you are those who learn the Quran and teach it.", 
+            urduText: "تم میں سے بہترین وہ ہے جو قرآن سیکھے اور سکھائے۔", 
+            narrator: "Uthman bin Affan", 
             source: "Sahih Bukhari" 
           }
         ];
@@ -218,7 +238,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab, onAudioStateChange,
               </div>
               {ayah && (
                 <>
-                  <p className="arabic-text text-3xl md:text-4xl lg:text-5xl leading-relaxed text-gradient-gold">{ayah.text}</p>
+                  <p className="arabic-text text-3xl md:text-4xl lg:text-5xl leading-relaxed text-gradient-gold line-clamp-4">{ayah.text}</p>
                   <div className="pt-6 border-t border-white/10 space-y-6">
                      <div className="space-y-4">
                         <p className="text-gold/90 font-bold text-sm md:text-lg lg:text-xl italic px-4">"{ayah.translation}"</p>
