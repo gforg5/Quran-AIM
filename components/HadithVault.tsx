@@ -23,9 +23,39 @@ const HadithVault: React.FC<HadithVaultProps> = ({ onAudioStateChange, activeAud
   const collections = ["All", "Sahih Bukhari", "Sahih Muslim", "Sunan Abi Dawud"];
 
   const initialHadiths: Hadith[] = [
-    { id: '1', collection: 'Sahih Bukhari', hadithNumber: '1', narrator: 'Umar bin al-Khattab', hadithArabic: 'إِنَّمَا الأَعْمَالُ بِالنِّيَّاتِ...', hadithEnglish: 'Actions are but by intentions...', urduText: 'اعمال کا دارومدار نیتوں پر ہے۔', text: 'Actions are but by intentions...', source: 'Sahih Bukhari' },
-    { id: '2', collection: 'Sahih Muslim', hadithNumber: '8', narrator: 'Abdullah bin Umar', hadithArabic: 'بُنِيَ الإِسْلاَمُ عَلَى خَمْسٍ...', hadithEnglish: 'Islam is built upon five pillars...', urduText: 'اسلام کی بنیاد پانچ چیزوں پر ہے۔', text: 'Islam is built upon five...', source: 'Sahih Muslim' },
-    { id: '3', collection: 'Sahih Bukhari', hadithNumber: '2', narrator: 'Aisha (RA)', hadithArabic: '...', hadithEnglish: 'The Prophet said, "Sometimes it comes like the ringing of a bell..."', urduText: '...', text: 'Revelation started...', source: 'Sahih Bukhari' },
+    { 
+      id: '1', 
+      collection: 'Sahih Bukhari', 
+      hadithNumber: '1', 
+      narrator: 'Umar bin al-Khattab', 
+      hadithArabic: 'إِنَّمَا الأَعْمَالُ بِالنِّيَّاتِ، وَإِنَّمَا لِكُلِّ امْرِئٍ مَا نَوَى', 
+      hadithEnglish: 'Actions are but by intentions, and every man shall have only that which he intended.', 
+      urduText: 'اعمال کا دارومدار نیتوں پر ہے اور ہر انسان کے لیے وہی ہے جس کی اس نے نیت کی۔', 
+      text: 'Actions are but by intentions...', 
+      source: 'Sahih Bukhari' 
+    },
+    { 
+      id: '2', 
+      collection: 'Sahih Muslim', 
+      hadithNumber: '8', 
+      narrator: 'Abdullah bin Umar', 
+      hadithArabic: 'بُنِيَ الإِسْلاَمُ عَلَى خَمْسٍ: شَهَادَةِ أَنْ لاَ إِلَهَ إِلاَّ اللَّهُ وَأَنَّ مُحَمَّدًا رَسُولُ اللَّهِ، وَإِقَامِ الصَّلاَةِ، وَإِیتَاءِ الزَّكَاةِ، وَالْحَجِّ، وَصَوْمِ رَمَضَانَ', 
+      hadithEnglish: 'Islam is built upon five pillars: Testifying that there is no god but Allah and Muhammad is the Messenger of Allah, establishing prayer, paying Zakat, Hajj, and fasting in Ramadan.', 
+      urduText: 'اسلام کی بنیاد پانچ ستونوں پر ہے: اس بات کی گواہی دینا کہ اللہ کے سوا کوئی معبود نہیں اور محمد اللہ کے رسول ہیں، نماز قائم کرنا، زکوٰۃ ادا کرنا، حج کرنا اور رمضان کے روزے رکھنا۔', 
+      text: 'Islam is built upon five pillars...', 
+      source: 'Sahih Muslim' 
+    },
+    { 
+      id: '3', 
+      collection: 'Sahih Bukhari', 
+      hadithNumber: '2', 
+      narrator: 'Aisha (RA)', 
+      hadithArabic: '...أَحْيَانًا يَأْتِينِي مِثْلَ صَلْصَلَةِ الْجَرَسِ وَهُوَ أَشَدُّهُ عَلَيَّ...', 
+      hadithEnglish: 'The Prophet said, "Sometimes it (the revelation) comes like the ringing of a bell and that is the hardest of all for me..."', 
+      urduText: 'نبی کریم ﷺ نے فرمایا، "کبھی یہ (وحی) گھنٹی کی آواز کی طرح آتی ہے اور یہ مجھ پر سب سے زیادہ سخت ہوتی ہے..."', 
+      text: 'Revelation started like ringing of bell...', 
+      source: 'Sahih Bukhari' 
+    },
   ];
 
   useEffect(() => {
@@ -128,7 +158,10 @@ const HadithVault: React.FC<HadithVaultProps> = ({ onAudioStateChange, activeAud
                       <span className="px-3 py-1 bg-gold/10 text-gold rounded-full text-[8px] font-black uppercase tracking-widest">{h.collection}</span>
                       <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">#{h.hadithNumber}</span>
                     </div>
-                    <p className="text-lg md:text-2xl font-black text-slate-800 dark:text-slate-100 leading-relaxed italic line-clamp-3">"{h.hadithEnglish || h.text}"</p>
+                    <div className="space-y-3">
+                      <p className="text-lg md:text-2xl font-black text-slate-800 dark:text-slate-100 leading-relaxed italic line-clamp-2">"{h.hadithEnglish || h.text}"</p>
+                      <p className="arabic-text text-sm md:text-lg text-emerald-700 dark:text-emerald-400 font-bold line-clamp-1">{h.urduText}</p>
+                    </div>
                   </div>
                   <div className="flex items-center">
                      <button onClick={(e) => handleVoiceInsight(h, e)} className={`relative flex items-center justify-center p-5 rounded-2xl transition-all shadow-lg ${activeAudio?.id === h.id || voiceLoading === h.id ? 'bg-gold text-white scale-110' : 'bg-slate-50 dark:bg-navy-800 text-slate-400 hover:text-gold'}`}>
@@ -152,6 +185,11 @@ const HadithVault: React.FC<HadithVaultProps> = ({ onAudioStateChange, activeAud
                <div className="pt-10 border-t border-slate-50 dark:border-slate-800/50 space-y-8">
                  <div className="p-8 bg-slate-50 dark:bg-navy-800/30 rounded-[2rem] border-l-8 border-gold italic space-y-6">
                    <p className="text-lg md:text-3xl text-slate-700 dark:text-slate-300 font-medium">"{selectedHadith.hadithEnglish || selectedHadith.text}"</p>
+                   {selectedHadith.urduText && (
+                     <p className="arabic-text text-xl md:text-3xl text-emerald-700 dark:text-emerald-400 font-bold border-t border-gold/10 pt-6 leading-relaxed">
+                       {selectedHadith.urduText}
+                     </p>
+                   )}
                  </div>
                  <div className="flex flex-col md:flex-row justify-between items-center gap-8">
                     <div className="text-center md:text-left"><p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Narrated by</p><p className="text-xl md:text-3xl font-black text-gold italic">{selectedHadith.narrator}</p></div>

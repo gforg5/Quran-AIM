@@ -16,6 +16,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab, onAudioStateChange,
   const [hadith, setHadith] = useState<Hadith | null>(null);
   const [loading, setLoading] = useState(true);
   const [voiceLoading, setVoiceLoading] = useState<string | null>(null);
+  const [favorites, setFavorites] = useState<string[]>([]);
   const audioContextRef = useRef<AudioContext | null>(null);
   const activeSourceRef = useRef<AudioBufferSourceNode | null>(null);
 
@@ -26,6 +27,14 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab, onAudioStateChange,
     }
     onAudioStateChange(null);
     setVoiceLoading(null);
+  };
+
+  const toggleFavorite = (id: string) => {
+    setFavorites(prev => {
+      const next = prev.includes(id) ? prev.filter(f => f !== id) : [...prev, id];
+      localStorage.setItem('almalik_dashboard_favs', JSON.stringify(next));
+      return next;
+    });
   };
 
   const handleVoicePlay = async (text: string, lang: 'en' | 'ur', id: string, title: string, subtitle: string) => {
@@ -65,11 +74,6 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab, onAudioStateChange,
       source.start();
     } catch (err: any) {
       console.error("Dashboard Voice Error:", err);
-      if (err.message?.includes('429') || err.message?.includes('quota')) {
-        alert("Gemini API Error: Quota Exceeded (429). Please check your billing/limits at ai.google.dev.");
-      } else {
-        alert(err.message || "Failed to play voice. Please ensure API_KEY is set in Vercel.");
-      }
       setVoiceLoading(null);
       onAudioStateChange(null);
     }
@@ -77,15 +81,19 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab, onAudioStateChange,
 
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
       try {
         const latitude = 24.8607;
         const longitude = 67.0011;
         
+        // Fetch Prayer Times
         const pRes = await fetch(`https://api.aladhan.com/v1/timings?latitude=${latitude}&longitude=${longitude}&method=1`);
         const pData = await pRes.json();
         setTimes(pData.data.timings);
 
-        const aRes = await fetch(`https://api.alquran.cloud/v1/ayah/2:255/editions/quran-uthmani,en.sahih,ur.jalandhry`);
+        // Fetch Random Ayah (Randomized on every refresh/load)
+        const randomAyahId = Math.floor(Math.random() * 6236) + 1;
+        const aRes = await fetch(`https://api.alquran.cloud/v1/ayah/${randomAyahId}/editions/quran-uthmani,en.sahih,ur.jalandhry`);
         const aData = await aRes.json();
         setAyah({
           number: aData.data[0].number,
@@ -96,16 +104,44 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab, onAudioStateChange,
           surah: aData.data[0].surah
         });
 
-        setHadith({
-          id: 'h-daily',
-          collection: 'Sahih Bukhari',
-          hadithNumber: '1',
-          hadithArabic: "إِنَّمَا الأَعْمَالُ بِالنِّيَّاتِ، وَإِنَّمَا لِكُلِّ امْرِئٍ مَا نَوَى",
-          text: "Actions are but by intentions, and every man shall have only that which he intended.",
-          urduText: "اعمال کا دارومدار نیتوں پر ہے اور ہر انسان کے لیے وہی hai جس کی اس نے نیت کی۔",
-          source: "Sahih Bukhari",
-          narrator: "Umar ibn al-Khattab"
-        });
+        // Expanded Hadith list for random selection on every refresh
+        const hadithPool: Hadith[] = [
+          { 
+            id: 'h-1', 
+            collection: 'Sahih Bukhari', 
+            hadithNumber: '1', 
+            hadithArabic: "إِنَّمَا الأَعْمَالُ بِالنِّيَّاتِ", 
+            text: "Actions are but by intentions.", 
+            urduText: "اعمال کا دارومدار نیتوں پر ہے۔", 
+            narrator: "Umar ibn al-Khattab", 
+            source: "Sahih Bukhari" 
+          },
+          { 
+            id: 'h-2', 
+            collection: 'Sahih Bukhari', 
+            hadithNumber: '2', 
+            hadithArabic: "الْمُسْلِمُ مَنْ سَلِمَ الْمُسْلِمُونَ مِنْ لِسَانِهِ وَيَدِهِ", 
+            text: "A Muslim is the one from whose tongue and hands the Muslims are safe.", 
+            urduText: "مسلمان وہ ہے جس کی زبان اور ہاتھ سے دوسرے مسلمان محفوظ رہیں۔", 
+            narrator: "Abdullah ibn Amr", 
+            source: "Sahih Bukhari" 
+          },
+          { 
+            id: 'h-3', 
+            collection: 'Sahih Bukhari', 
+            hadithNumber: '33', 
+            hadithArabic: "آيَةُ الْمُنَافِقِ ثَلَاثٌ: إِذَا حَدَّثَ كَذَبَ، وَإِذَا وَعَدَ أَخْلَفَ، وَإِذَا اؤْتُمِنَ خَانَ", 
+            text: "The signs of a hypocrite are three: Whenever he speaks, he tells a lie; whenever he promises, he breaks it; and whenever he is entrusted, he betrays.", 
+            urduText: "منافق کی تین نشانیاں ہیں: جب بات کرے تو جھوٹ بولے، جب وعدہ کرے تو اس کی خلاف ورزی کرے، اور جب اسے امانت دی جائے تو خیانت کرے۔", 
+            narrator: "Abu Huraira", 
+            source: "Sahih Bukhari" 
+          }
+        ];
+        const randomHadith = hadithPool[Math.floor(Math.random() * hadithPool.length)];
+        setHadith(randomHadith);
+
+        const favs = localStorage.getItem('almalik_dashboard_favs');
+        if (favs) setFavorites(JSON.parse(favs));
 
       } catch (err) {
         console.error("Dashboard Sync Error", err);
@@ -148,6 +184,13 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab, onAudioStateChange,
       </section>
 
       <section className="space-y-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 px-2">
+           <h2 className="text-xl md:text-3xl font-black text-navy-950 dark:text-white uppercase tracking-tighter playfair italic">Prayer Times</h2>
+           <div className="text-right">
+             <p className="text-[7px] md:text-[9px] font-black text-gold uppercase tracking-widest leading-none">Note: Prayer times vary by location. These times are for Karachi, Pakistan.</p>
+             <p className="arabic-text text-[10px] md:text-[12px] text-slate-500 font-bold mt-1">نوٹ: نماز کے اوقات مقام کے لحاظ سے مختلف ہو سکتے ہیں۔ یہ اوقات کراچی، پاکستان کے لیے ہیں۔</p>
+           </div>
+        </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4">
           {times && (Object.entries(times) as [string, string][]).filter(([k]) => ['Fajr', 'Sunrise', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'].includes(k)).map(([name, time]) => (
             <div key={name} className="glass-ui p-4 md:p-6 rounded-[1.5rem] md:rounded-[2.5rem] flex flex-col items-center border border-gold/5 bg-white/5 dark:bg-navy-900/40">
@@ -165,7 +208,14 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab, onAudioStateChange,
       <section className="grid lg:grid-cols-2 gap-6 md:gap-8 items-stretch">
         <div className="bg-emerald-950 rounded-[2rem] md:rounded-[4rem] p-8 md:p-12 md:pt-16 text-white shadow-2xl relative overflow-hidden flex flex-col justify-start border-l-4 md:border-l-[12px] border-gold min-h-[450px] lg:min-h-[550px]">
            <div className="relative z-10 space-y-6 text-center">
-              <span className="px-3 py-1 bg-gold/20 border border-gold/40 rounded-full text-gold text-[7px] md:text-[9px] font-black tracking-widest uppercase">Daily Verse</span>
+              <div className="flex justify-center items-center gap-3">
+                <span className="px-3 py-1 bg-gold/20 border border-gold/40 rounded-full text-gold text-[7px] md:text-[9px] font-black tracking-widest uppercase">Daily Verse</span>
+                {ayah && (
+                  <button onClick={() => toggleFavorite(`ayah-${ayah.number}`)} className={`transition-all ${favorites.includes(`ayah-${ayah.number}`) ? 'text-gold' : 'text-white/20 hover:text-gold'}`}>
+                    <svg className="w-5 h-5" fill={favorites.includes(`ayah-${ayah.number}`) ? "currentColor" : "none"} viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.382-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>
+                  </button>
+                )}
+              </div>
               {ayah && (
                 <>
                   <p className="arabic-text text-3xl md:text-4xl lg:text-5xl leading-relaxed text-gradient-gold">{ayah.text}</p>
@@ -190,7 +240,14 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab, onAudioStateChange,
 
         <div className="bg-white dark:bg-navy-900 rounded-[2rem] md:rounded-[4rem] p-8 md:p-12 md:pt-16 shadow-2xl border border-gold/10 flex flex-col justify-start min-h-[450px] lg:min-h-[550px]">
            <div className="relative z-10 space-y-8 text-center">
-              <span className="px-3 py-1 bg-emerald-100 dark:bg-navy-800 border border-emerald-200 dark:border-navy-700 rounded-full text-emerald-700 dark:text-emerald-400 text-[7px] md:text-[9px] font-black tracking-widest uppercase">Daily Hadith</span>
+              <div className="flex justify-center items-center gap-3">
+                <span className="px-3 py-1 bg-emerald-100 dark:bg-navy-800 border border-emerald-200 dark:border-navy-700 rounded-full text-emerald-700 dark:text-emerald-400 text-[7px] md:text-[9px] font-black tracking-widest uppercase">Daily Hadith</span>
+                {hadith && (
+                  <button onClick={() => toggleFavorite(`hadith-${hadith.id}`)} className={`transition-all ${favorites.includes(`hadith-${hadith.id}`) ? 'text-gold' : 'text-slate-200 dark:text-navy-800 hover:text-gold'}`}>
+                    <svg className="w-5 h-5" fill={favorites.includes(`hadith-${hadith.id}`) ? "currentColor" : "none"} viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.382-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>
+                  </button>
+                )}
+              </div>
               {hadith && (
                 <div className="space-y-6">
                   <p className="arabic-text text-2xl md:text-3xl lg:text-4xl font-bold text-gold leading-relaxed">{hadith.hadithArabic}</p>
@@ -200,11 +257,11 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab, onAudioStateChange,
                       <p className="arabic-text text-lg md:text-2xl font-bold text-emerald-700 dark:text-emerald-400 leading-relaxed">{hadith.urduText}</p>
                     </div>
                     <div className="flex justify-center gap-4">
-                      <button onClick={() => handleVoicePlay(hadith.text, 'en', 'hadith-en', 'Hadith', 'Sahih Bukhari')} className={`flex items-center gap-2 px-6 py-3 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${activeAudio?.id === 'hadith-en' ? 'bg-gold text-navy-950' : voiceLoading === 'hadith-en' ? 'bg-slate-100 dark:bg-navy-800 text-gold animate-pulse' : 'bg-slate-100 dark:bg-navy-800 text-slate-400 hover:text-gold'}`}>
-                        <SpeakerIcon className="w-4 h-4" /> {voiceLoading === 'hadith-en' ? 'Connecting...' : activeAudio?.id === 'hadith-en' ? 'Stop' : 'English'}
+                      <button onClick={() => handleVoicePlay(hadith.text, 'en', `hadith-en-${hadith.id}`, 'Hadith', hadith.collection)} className={`flex items-center gap-2 px-6 py-3 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${activeAudio?.id === `hadith-en-${hadith.id}` ? 'bg-gold text-navy-950' : voiceLoading === `hadith-en-${hadith.id}` ? 'bg-slate-100 dark:bg-navy-800 text-gold animate-pulse' : 'bg-slate-100 dark:bg-navy-800 text-slate-400 hover:text-gold'}`}>
+                        <SpeakerIcon className="w-4 h-4" /> {voiceLoading === `hadith-en-${hadith.id}` ? 'Connecting...' : activeAudio?.id === `hadith-en-${hadith.id}` ? 'Stop' : 'English'}
                       </button>
-                      <button onClick={() => handleVoicePlay(hadith.urduText!, 'ur', 'hadith-ur', 'حدیث', 'صحیح بخاری')} className={`flex items-center gap-2 px-6 py-3 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${activeAudio?.id === 'hadith-ur' ? 'bg-gold text-navy-950' : voiceLoading === 'hadith-ur' ? 'bg-slate-100 dark:bg-navy-800 text-gold animate-pulse' : 'bg-slate-100 dark:bg-navy-800 text-slate-400 hover:text-gold'}`}>
-                        <SpeakerIcon className="w-4 h-4" /> {voiceLoading === 'hadith-ur' ? 'Connecting...' : activeAudio?.id === 'hadith-ur' ? 'Stop' : 'Urdu'}
+                      <button onClick={() => handleVoicePlay(hadith.urduText!, 'ur', `hadith-ur-${hadith.id}`, 'حدیث', hadith.urduText || 'صحیح بخاری')} className={`flex items-center gap-2 px-6 py-3 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${activeAudio?.id === `hadith-ur-${hadith.id}` ? 'bg-gold text-navy-950' : voiceLoading === `hadith-ur-${hadith.id}` ? 'bg-slate-100 dark:bg-navy-800 text-gold animate-pulse' : 'bg-slate-100 dark:bg-navy-800 text-slate-400 hover:text-gold'}`}>
+                        <SpeakerIcon className="w-4 h-4" /> {voiceLoading === `hadith-ur-${hadith.id}` ? 'Connecting...' : activeAudio?.id === `hadith-ur-${hadith.id}` ? 'Stop' : 'Urdu'}
                       </button>
                     </div>
                   </div>

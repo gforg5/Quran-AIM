@@ -3,7 +3,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { GoogleGenAI, LiveServerMessage, Modality } from '@google/genai';
 import { getIslamicGuidance, decodeAudio, decodeAudioData } from '../services/geminiService';
 import { ChatMessage } from '../types';
-import { MalikLogo, SparklesIcon, MicIcon, SpeakerIcon, ArrowLeftIcon, LoginIcon, ShareIcon, CopyIcon, UndoIcon } from './Icons';
+import { MalikLogo, SparklesIcon, MicIcon, SpeakerIcon, ArrowLeftIcon, LoginIcon } from './Icons';
 
 function encode(bytes: Uint8Array) {
   let binary = '';
@@ -58,7 +58,7 @@ const AIScholar: React.FC = () => {
     setMessages([{ 
       id: 'initial', 
       role: 'model', 
-      text: `Assalamu Alaikum ${userId}. I am your Al-Malik AI Scholar. How may I assist you today?`, 
+      text: `Assalamu Alaikum ${userId}. Welcome to SMA Sanctuary. I am your Al-Malik AI Scholar. How may I assist you today?`, 
       timestamp: new Date() 
     }]);
   };
@@ -228,25 +228,31 @@ const AIScholar: React.FC = () => {
 
   if (isLoggingIn) return (
     <div className="flex flex-col h-[calc(100vh-10rem)] items-center justify-center p-6">
-       <div className="glass-premium p-8 md:p-12 rounded-[2.5rem] w-full max-sm shadow-2xl border border-gold/20 space-y-6 bg-white dark:bg-navy-900/50">
-          <div className="text-center space-y-4">
-            <LoginIcon className="w-10 h-10 text-gold mx-auto" />
-            <h2 className="text-xl font-black text-navy-950 dark:text-white uppercase tracking-tighter">Enter SMA Sanctuary</h2>
-            <p className="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Authenticated Web-System Access</p>
+       <div className="glass-premium p-8 md:p-12 rounded-[2.5rem] w-full max-w-md shadow-2xl border border-gold/20 space-y-6 bg-white dark:bg-navy-900/50">
+          <div className="text-center space-y-6">
+            <MalikLogo className="w-12 h-12 text-gold mx-auto animate-sacred-glow" />
+            <div className="space-y-4">
+              <div className="space-y-1">
+                <h2 className="text-xl md:text-2xl font-black text-navy-950 dark:text-white uppercase tracking-tighter">
+                  Islamic Talks <span className="text-gold font-serif lowercase italic">System</span>
+                </h2>
+                <p className="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Authenticated Web-System Access</p>
+              </div>
+              
+              <div className="p-4 bg-navy-50 dark:bg-navy-950 rounded-2xl border border-gold/10 space-y-3">
+                 <div className="space-y-1">
+                    <p className="text-[11px] md:text-sm font-bold text-navy-900 dark:text-white leading-relaxed playfair">
+                      Welcome | <span className="arabic-text text-sm text-gold font-bold">خوش آمدید</span> | <span className="arabic-text text-sm text-gold font-bold">ښه راغلاست</span>
+                    </p>
+                 </div>
+              </div>
+            </div>
           </div>
           <form onSubmit={handleLogin} className="space-y-4">
-             <input name="username" type="text" placeholder="Your Name" className="w-full py-4 px-6 bg-slate-50 dark:bg-navy-950 rounded-2xl font-bold focus:ring-2 focus:ring-gold outline-none text-sm border border-gold/5" required />
-             <button type="submit" className="w-full py-4 bg-gold text-navy-950 font-black rounded-2xl uppercase tracking-widest text-[10px] shadow-xl hover:scale-[1.02] transition-all">ACCESS SYSTEM</button>
+             <input name="username" type="text" placeholder="Your Name e.g. Mohsin" className="w-full py-4 px-6 bg-slate-50 dark:bg-navy-950 rounded-2xl font-bold focus:ring-2 focus:ring-gold outline-none text-sm border border-gold/5" required />
+             <button type="submit" className="w-full py-4 bg-gold text-navy-950 font-black rounded-2xl uppercase tracking-widest text-[10px] shadow-xl hover:scale-[1.02] transition-all">Confirm & Access</button>
           </form>
        </div>
-    </div>
-  );
-
-  if (isVoiceMode) return (
-    <div className="fixed inset-0 z-[100] bg-navy-950 flex flex-col items-center justify-center p-6 text-center">
-      <button onClick={() => { liveSessionRef.current?.close(); setIsVoiceMode(false); }} className="absolute top-8 left-8 p-3 text-white bg-white/5 rounded-xl"><ArrowLeftIcon className="w-5 h-5" /></button>
-      <MalikLogo className="w-16 md:w-24 text-gold mb-12 animate-pulse" />
-      <p className="text-white text-lg italic uppercase tracking-widest">{liveTranscription || "CONNECTING..."}</p>
     </div>
   );
 
