@@ -58,7 +58,7 @@ const AIScholar: React.FC = () => {
     setMessages([{ 
       id: 'initial', 
       role: 'model', 
-      text: `Assalamu Alaikum ${userId}. Welcome to Islamic Talks. I am your Al-Malik AI Scholar. How may I assist you today?`, 
+      text: `Assalamu Alaikum ${userId}. Welcome to Islamic Talks. I am your Al-Malik AI Scholar. How may I assist you today?\n\nالسلام علیکم ${userId}۔ اسلامک ٹاکس میں خوش آمدید۔ میں آپ کا المالک اے آئی سکالر ہوں۔ آج میں آپ کی کیا مدد کر سکتا ہوں؟`, 
       timestamp: new Date() 
     }]);
   };
@@ -176,7 +176,7 @@ const AIScholar: React.FC = () => {
         config: {
           responseModalities: [Modality.AUDIO],
           speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Fenrir' } } },
-          systemInstruction: "You are Al-Malik Voice Assistant. Professional Islamic male scholar voice.",
+          systemInstruction: "You are Al-Malik Voice Assistant. Professional Islamic male scholar voice. Always respond bilingually (English and Urdu).",
           outputAudioTranscription: {}
         }
       });
@@ -262,8 +262,9 @@ const AIScholar: React.FC = () => {
         <div className="flex items-center gap-4">
           <MalikLogo className="w-8 h-8 md:w-10 md:h-10 text-gold" />
           <div className="flex flex-col">
-            <div className="flex items-center gap-2">
-              <span className="text-white font-black text-[9px] md:text-[11px] uppercase tracking-tighter">{userId}'s Islamic Talks</span>
+            <div className="flex items-center gap-3">
+              <span className="text-gold font-black italic text-[10px] md:text-[12px] uppercase tracking-tighter mr-1">{userId}'s</span>
+              <span className="text-white font-black text-[9px] md:text-[11px] uppercase tracking-tighter">Islamic Talks</span>
               <div className="w-1 h-1 bg-emerald-500 rounded-full animate-pulse"></div>
             </div>
             <span className="text-[7px] text-gold uppercase tracking-widest font-black opacity-60">System Online</span>
@@ -278,14 +279,20 @@ const AIScholar: React.FC = () => {
              <span className="text-[9px] font-black uppercase tracking-widest">Account</span>
              <svg className={`w-3 h-3 transition-transform ${showAccountMenu ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" /></svg>
           </button>
-          <button onClick={startLiveVoiceSession} title="Live Voice" className="p-2.5 bg-white/5 hover:bg-gold hover:text-navy-950 rounded-lg transition-all border border-white/5"><SpeakerIcon className="w-4 h-4" /></button>
+          <button onClick={startLiveVoiceSession} title="Start Voice Chat" className="p-2.5 bg-white/5 hover:bg-gold hover:text-navy-950 rounded-lg transition-all border border-white/5 flex items-center gap-1">
+             <div className="flex items-center gap-0.5 px-1">
+                <div className="w-0.5 h-3 bg-current animate-pulse"></div>
+                <div className="w-0.5 h-5 bg-current animate-pulse delay-75"></div>
+                <div className="w-0.5 h-3 bg-current animate-pulse delay-150"></div>
+             </div>
+          </button>
           
           <div className="relative">
             <button 
               onClick={() => setShowAccountMenu(!showAccountMenu)}
               className="sm:hidden p-2.5 bg-white/5 rounded-lg border border-white/5"
             >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572-1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37a1.724 1.724 0 002.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
             </button>
             {showAccountMenu && (
               <div className="absolute top-full right-0 mt-2 w-48 bg-navy-900 border border-gold/20 rounded-xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 z-[60]">

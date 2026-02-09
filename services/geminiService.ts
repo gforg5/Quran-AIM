@@ -32,7 +32,7 @@ export const getIslamicGuidance = async (query: string, history: any[]) => {
       model: 'gemini-3-flash-preview',
       contents: contents,
       config: {
-        systemInstruction: "You are 'Al-Malik AI', a professional male Islamic scholar. Provide accurate, cited information. Do not use symbols like # or * for headers. Use simple paragraphs. If asked in English, provide English response with relevant Urdu translations if helpful. If asked in Urdu, respond in Urdu.",
+        systemInstruction: "You are 'Al-Malik AI', a professional male Islamic scholar. IMPORTANT: You MUST always provide your full response in BOTH English and Urdu. Provide accurate, cited information. Do not use symbols like # or * for headers. Use simple paragraphs. First provide the English response, then provide the full Urdu translation (اردو ترجمہ) below it.",
         tools: [{ googleSearch: {} }]
       }
     });
