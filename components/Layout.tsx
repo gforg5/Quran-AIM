@@ -55,7 +55,7 @@ const Layout: React.FC<LayoutProps> = ({ activeTab, setActiveTab, goHome, showDa
 
           <button 
             onClick={() => setActiveTab(AppTab.SYSTEMS_DEVELOPMENT)}
-            title="Systems Development AI"
+            title="Islamic Talks"
             className={`p-2 md:p-3 rounded-xl transition-all ${isTabActive(AppTab.SYSTEMS_DEVELOPMENT) ? 'bg-gold text-white' : 'text-slate-400 hover:text-gold'}`}
           >
             <SparklesIcon className="w-4 h-4 md:w-5 md:h-5" />
@@ -94,6 +94,13 @@ const Layout: React.FC<LayoutProps> = ({ activeTab, setActiveTab, goHome, showDa
         <header className="h-14 flex items-center justify-between px-4 md:px-6 border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-navy-950/80 backdrop-blur-md shrink-0 z-40">
           <div className="flex items-center gap-2 overflow-hidden mr-2 max-w-[60%]">
              <span className="text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] text-gold cursor-pointer shrink-0" onClick={goHome}>AL-MALIK</span>
+             <button 
+               onClick={() => setActiveTab(AppTab.FAVORITES)} 
+               className={`p-1.5 transition-all ${activeTab === AppTab.FAVORITES && !showDashboard ? 'text-gold' : 'text-slate-300 hover:text-gold'}`}
+               title="Favorites Vault"
+             >
+               <svg className="w-4 h-4" fill={activeTab === AppTab.FAVORITES && !showDashboard ? "currentColor" : "none"} viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.382-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>
+             </button>
              {!showDashboard && (
                <>
                  <div className="w-1 h-1 bg-slate-300 dark:bg-slate-700 rounded-full shrink-0"></div>
@@ -102,8 +109,9 @@ const Layout: React.FC<LayoutProps> = ({ activeTab, setActiveTab, goHome, showDa
                     activeTab === AppTab.HADITH ? 'Hadith (حدیث)' :
                     activeTab === AppTab.DEVELOPER ? 'SMA' : 
                     activeTab === AppTab.ABOUT ? 'About' :
-                    activeTab === AppTab.SYSTEMS_DEVELOPMENT ? 'Systems Development' : 
+                    activeTab === AppTab.SYSTEMS_DEVELOPMENT ? 'Islamic Talks' : 
                     activeTab === AppTab.SADAQAH ? 'Sadaqah' : 
+                    activeTab === AppTab.FAVORITES ? 'Favorites' :
                     activeTab === AppTab.TOOLS ? 'Explore' : 'About'
                   }
                  </h1>

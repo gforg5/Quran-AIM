@@ -92,5 +92,6 @@ export enum AppTab {
   TOOLS = 'tools',
   DEVELOPER = 'developer',
   ABOUT = 'about',
-  SADAQAH = 'sadaqah'
+  SADAQAH = 'sadaqah',
+  FAVORITES = 'favorites'
 }

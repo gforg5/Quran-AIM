@@ -11,6 +11,7 @@ import Tools from './components/Tools';
 import ArtStudio from './components/ArtStudio';
 import Dashboard from './components/Dashboard';
 import Sadaqah from './components/Sadaqah';
+import Favorites from './components/Favorites';
 import { AppTab, ActiveAudio } from './types';
 
 const App: React.FC = () => {
@@ -36,6 +37,7 @@ const App: React.FC = () => {
       case AppTab.TOOLS: return <Tools />;
       case AppTab.ART_STUDIO: return <ArtStudio />;
       case AppTab.SADAQAH: return <Sadaqah />;
+      case AppTab.FAVORITES: return <Favorites />;
       default: return <QuranExplorer onAudioStateChange={setActiveAudio} activeAudio={activeAudio} />;
     }
   };
